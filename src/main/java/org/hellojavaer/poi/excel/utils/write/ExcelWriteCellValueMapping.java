@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,46 +32,46 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
  */
 public class ExcelWriteCellValueMapping extends HashMap<String, Object> {
 
-	private static final long serialVersionUID = 1L;
+    private static final long       serialVersionUID = 1L;
 
-	private static final Object DEFAULT_INPUT = new Object();
-	private boolean setDefaultValue = false;
-	private Object defaultValue = null;
-	@SuppressWarnings("rawtypes")
-	private ExcelWriteCellProcessor defaultProcessor;
+    private static final Object     DEFAULT_INPUT    = new Object();
+    private boolean                 setDefaultValue  = false;
+    private Object                  defaultValue     = null;
+    @SuppressWarnings("rawtypes")
+    private ExcelWriteCellProcessor defaultProcessor;
 
-	public Object getDefaultValue() {
-		return this.defaultValue;
-	}
+    public Object getDefaultValue() {
+        return this.defaultValue;
+    }
 
-	public void setDefaultValue(Object val) {
-		this.defaultValue = val;
-	}
+    public void setDefaultValue(Object val) {
+        this.defaultValue = val;
+    }
 
-	public void setDefaultValueWithDefaultInput() {
-		this.defaultValue = DEFAULT_INPUT;
-	}
+    public void setDefaultValueWithDefaultInput() {
+        this.defaultValue = DEFAULT_INPUT;
+    }
 
-	public void resetDefaultValue() {
-		this.defaultValue = null;
-		this.setDefaultValue = false;
-	}
+    public void resetDefaultValue() {
+        this.defaultValue = null;
+        this.setDefaultValue = false;
+    }
 
-	public boolean isSetDefaultValue() {
-		return setDefaultValue;
-	}
+    public boolean isSetDefaultValue() {
+        return setDefaultValue;
+    }
 
-	public boolean isSetDefaultValueWithDefaultInput() {
-		return setDefaultValue && (defaultValue == DEFAULT_INPUT);
-	}
+    public boolean isSetDefaultValueWithDefaultInput() {
+        return setDefaultValue && (defaultValue == DEFAULT_INPUT);
+    }
 
-	@SuppressWarnings("rawtypes")
-	public ExcelWriteCellProcessor getDefaultProcessor() {
-		return defaultProcessor;
-	}
+    @SuppressWarnings("rawtypes")
+    public ExcelWriteCellProcessor getDefaultProcessor() {
+        return defaultProcessor;
+    }
 
-	public void setDefaultProcessor(
-			@SuppressWarnings("rawtypes") ExcelWriteCellProcessor defaultProcessor) {
-		this.defaultProcessor = defaultProcessor;
-	}
+    public void setDefaultProcessor(@SuppressWarnings("rawtypes")
+    ExcelWriteCellProcessor defaultProcessor) {
+        this.defaultProcessor = defaultProcessor;
+    }
 }

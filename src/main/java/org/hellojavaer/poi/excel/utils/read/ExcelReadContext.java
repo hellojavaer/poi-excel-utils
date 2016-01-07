@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,151 +30,147 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelReadContext<T> implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long   serialVersionUID = 1L;
 
-	private Map<String, Object> contextContainer = new HashMap<String, Object>();
+    private Map<String, Object> contextContainer = new HashMap<String, Object>();
 
-	private Sheet curSheet;
-	private Integer curSheetIndex;
-	private String curSheetName;
+    private Sheet               curSheet;
+    private Integer             curSheetIndex;
+    private String              curSheetName;
 
-	private Row curRow;
-	private Integer curRowIndex;
+    private Row                 curRow;
+    private Integer             curRowIndex;
 
-	private Cell curCell;
-	private Integer curColIndex;
-	private String curColStrIndex;
+    private Cell                curCell;
+    private Integer             curColIndex;
+    private String              curColStrIndex;
 
-	private T curRowData;
-	private List<T> dataList;
+    private T                   curRowData;
+    private List<T>             dataList;
 
-	public Cell getCell(Integer rowIndex, Integer colIndex) {
-		if (rowIndex == null || rowIndex < 0 || colIndex == null
-				|| colIndex < 0) {
-			return null;
-		}
-		if (this.curSheet == null) {
-			return null;
-		} else {
-			Row row = curSheet.getRow(rowIndex);
-			if (row == null) {
-				return null;
-			} else {
-				return row.getCell(colIndex);
-			}
-		}
-	}
+    public Cell getCell(Integer rowIndex, Integer colIndex) {
+        if (rowIndex == null || rowIndex < 0 || colIndex == null || colIndex < 0) {
+            return null;
+        }
+        if (this.curSheet == null) {
+            return null;
+        } else {
+            Row row = curSheet.getRow(rowIndex);
+            if (row == null) {
+                return null;
+            } else {
+                return row.getCell(colIndex);
+            }
+        }
+    }
 
-	public Cell getCell(Integer rowIndex, String colStrIndex) {
-		return getCell(rowIndex,
-				ExcelUtils.convertColCharIndexToIntIndex(colStrIndex));
-	}
+    public Cell getCell(Integer rowIndex, String colStrIndex) {
+        return getCell(rowIndex, ExcelUtils.convertColCharIndexToIntIndex(colStrIndex));
+    }
 
-	public ExcelCellValue getCellValue(Integer rowIndex, Integer colIndex) {
-		Cell cell = getCell(rowIndex, colIndex);
-		return ExcelUtils.readCell(cell);
-	}
+    public ExcelCellValue getCellValue(Integer rowIndex, Integer colIndex) {
+        Cell cell = getCell(rowIndex, colIndex);
+        return ExcelUtils.readCell(cell);
+    }
 
-	public ExcelCellValue getCellValue(Integer rowIndex, String colStrIndex) {
-		return getCellValue(rowIndex,
-				ExcelUtils.convertColCharIndexToIntIndex(colStrIndex));
-	}
+    public ExcelCellValue getCellValue(Integer rowIndex, String colStrIndex) {
+        return getCellValue(rowIndex, ExcelUtils.convertColCharIndexToIntIndex(colStrIndex));
+    }
 
-	public void setAttribute(String key, Object value) {
-		this.contextContainer.put(key, value);
-	}
+    public void setAttribute(String key, Object value) {
+        this.contextContainer.put(key, value);
+    }
 
-	public Object getAttribute(String key) {
-		return this.contextContainer.get(key);
-	}
+    public Object getAttribute(String key) {
+        return this.contextContainer.get(key);
+    }
 
-	public Sheet getCurSheet() {
-		return curSheet;
-	}
+    public Sheet getCurSheet() {
+        return curSheet;
+    }
 
-	public void setCurSheet(Sheet curSheet) {
-		this.curSheet = curSheet;
-	}
+    public void setCurSheet(Sheet curSheet) {
+        this.curSheet = curSheet;
+    }
 
-	public Row getCurRow() {
-		return curRow;
-	}
+    public Row getCurRow() {
+        return curRow;
+    }
 
-	public void setCurRow(Row curRow) {
-		this.curRow = curRow;
-	}
+    public void setCurRow(Row curRow) {
+        this.curRow = curRow;
+    }
 
-	public Cell getCurCell() {
-		return curCell;
-	}
+    public Cell getCurCell() {
+        return curCell;
+    }
 
-	public void setCurCell(Cell curCell) {
-		this.curCell = curCell;
-	}
+    public void setCurCell(Cell curCell) {
+        this.curCell = curCell;
+    }
 
-	public T getCurRowData() {
-		return curRowData;
-	}
+    public T getCurRowData() {
+        return curRowData;
+    }
 
-	public void setCurRowData(T curRowData) {
-		this.curRowData = curRowData;
-	}
+    public void setCurRowData(T curRowData) {
+        this.curRowData = curRowData;
+    }
 
-	public List<T> getDataList() {
-		return dataList;
-	}
+    public List<T> getDataList() {
+        return dataList;
+    }
 
-	public void setDataList(List<T> dataList) {
-		this.dataList = dataList;
-	}
+    public void setDataList(List<T> dataList) {
+        this.dataList = dataList;
+    }
 
-	// ==================Extends Get Method====================
+    // ==================Extends Get Method====================
 
-	public Integer getCurRowIndex() {
-		return curRowIndex;
-	}
+    public Integer getCurRowIndex() {
+        return curRowIndex;
+    }
 
-	public void setCurRowIndex(Integer curRowIndex) {
-		this.curRowIndex = curRowIndex;
-	}
+    public void setCurRowIndex(Integer curRowIndex) {
+        this.curRowIndex = curRowIndex;
+    }
 
-	public Integer getCurColIndex() {
-		return curColIndex;
-	}
+    public Integer getCurColIndex() {
+        return curColIndex;
+    }
 
-	public void setCurSheetIndex(Integer curSheetIndex) {
-		this.curSheetIndex = curSheetIndex;
-	}
+    public void setCurSheetIndex(Integer curSheetIndex) {
+        this.curSheetIndex = curSheetIndex;
+    }
 
-	/**
-	 * NOTE HERE
-	 * 
-	 * @param curColIndex
-	 */
-	public void setCurColIndex(Integer curColIndex) {
-		this.curColIndex = curColIndex;
-		if (curColIndex == null) {
-			this.curColStrIndex = null;
-		} else {
-			this.curColStrIndex = ExcelUtils
-					.convertColIntIndexToCharIndex(curColIndex);
-		}
-	}
+    /**
+     * NOTE HERE
+     * 
+     * @param curColIndex
+     */
+    public void setCurColIndex(Integer curColIndex) {
+        this.curColIndex = curColIndex;
+        if (curColIndex == null) {
+            this.curColStrIndex = null;
+        } else {
+            this.curColStrIndex = ExcelUtils.convertColIntIndexToCharIndex(curColIndex);
+        }
+    }
 
-	public String getCurSheetName() {
-		return curSheetName;
-	}
+    public String getCurSheetName() {
+        return curSheetName;
+    }
 
-	public void setCurSheetName(String curSheetName) {
-		this.curSheetName = curSheetName;
-	}
+    public void setCurSheetName(String curSheetName) {
+        this.curSheetName = curSheetName;
+    }
 
-	public String getCurColStrIndex() {
-		return curColStrIndex;
-	}
+    public String getCurColStrIndex() {
+        return curColStrIndex;
+    }
 
-	public Integer getCurSheetIndex() {
-		return curSheetIndex;
-	}
+    public Integer getCurSheetIndex() {
+        return curSheetIndex;
+    }
 
 }

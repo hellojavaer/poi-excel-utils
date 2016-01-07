@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,42 +22,41 @@ import java.io.Serializable;
  */
 public class InnerReadCellProcessorWrapper implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long         serialVersionUID = 1L;
 
-	private boolean required = true;
-	private ExcelReadCellProcessor processor;
-	private ExcelReadCellValueMapping valueMapping;
+    private boolean                   required         = true;
+    private ExcelReadCellProcessor    processor;
+    private ExcelReadCellValueMapping valueMapping;
 
-	public InnerReadCellProcessorWrapper(
-			ExcelReadCellValueMapping valueMapping,
-			ExcelReadCellProcessor processor, boolean required) {
-		this.valueMapping = valueMapping;
-		this.processor = processor;
-		this.required = required;
-	}
+    public InnerReadCellProcessorWrapper(ExcelReadCellValueMapping valueMapping, ExcelReadCellProcessor processor,
+                                         boolean required) {
+        this.valueMapping = valueMapping;
+        this.processor = processor;
+        this.required = required;
+    }
 
-	public ExcelReadCellProcessor getProcessor() {
-		return processor;
-	}
+    public ExcelReadCellProcessor getProcessor() {
+        return processor;
+    }
 
-	public void setProcessor(ExcelReadCellProcessor processor) {
-		this.processor = processor;
-	}
+    public void setProcessor(ExcelReadCellProcessor processor) {
+        this.processor = processor;
+    }
 
-	public ExcelReadCellValueMapping getValueMapping() {
-		return valueMapping;
-	}
+    public ExcelReadCellValueMapping getValueMapping() {
+        return valueMapping;
+    }
 
-	public void setValueMapping(ExcelReadCellValueMapping valueMapping) {
-		this.valueMapping = valueMapping;
-	}
+    public void setValueMapping(ExcelReadCellValueMapping valueMapping) {
+        this.valueMapping = valueMapping;
+    }
 
-	public boolean isRequired() {
-		return required;
-	}
+    public boolean isRequired() {
+        return required;
+    }
 
-	public void setRequired(boolean required) {
-		this.required = required;
-	}
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
 
 }

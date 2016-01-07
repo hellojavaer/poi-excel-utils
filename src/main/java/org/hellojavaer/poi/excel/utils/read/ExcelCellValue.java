@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,62 +32,62 @@ import com.alibaba.fastjson.util.TypeUtils;
  */
 public class ExcelCellValue implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private Object originalValue;
+    private static final long serialVersionUID = 1L;
+    private Object            originalValue;
 
-	public ExcelCellValue(Object originalValue) {
-		this.originalValue = originalValue;
-	}
+    public ExcelCellValue(Object originalValue) {
+        this.originalValue = originalValue;
+    }
 
-	public Byte getByteValue() {
-		return TypeUtils.castToByte(originalValue);
-	}
+    public Byte getByteValue() {
+        return TypeUtils.castToByte(originalValue);
+    }
 
-	public Short getShortValue() {
-		return TypeUtils.castToShort(originalValue);
-	}
+    public Short getShortValue() {
+        return TypeUtils.castToShort(originalValue);
+    }
 
-	public Integer getIntValue() {
-		return TypeUtils.castToInt(originalValue);
-	}
+    public Integer getIntValue() {
+        return TypeUtils.castToInt(originalValue);
+    }
 
-	public Long getLongValue() {
-		return TypeUtils.castToLong(originalValue);
-	}
+    public Long getLongValue() {
+        return TypeUtils.castToLong(originalValue);
+    }
 
-	public Float getFloatValue() {
-		return TypeUtils.castToFloat(originalValue);
-	}
+    public Float getFloatValue() {
+        return TypeUtils.castToFloat(originalValue);
+    }
 
-	public Double getDoubleValue() {
-		return TypeUtils.castToDouble(originalValue);
-	}
+    public Double getDoubleValue() {
+        return TypeUtils.castToDouble(originalValue);
+    }
 
-	public String getStringValue() {
-		return TypeUtils.castToString(originalValue);
-	}
+    public String getStringValue() {
+        return TypeUtils.castToString(originalValue);
+    }
 
-	public Boolean getBooleanValue() {
-		return TypeUtils.castToBoolean(originalValue);
-	}
+    public Boolean getBooleanValue() {
+        return TypeUtils.castToBoolean(originalValue);
+    }
 
-	public Date getDateValue() {
-		return TypeUtils.castToDate(originalValue);
-	}
+    public Date getDateValue() {
+        return TypeUtils.castToDate(originalValue);
+    }
 
-	public BigDecimal getBigDecimal() {
-		return TypeUtils.castToBigDecimal(originalValue);
-	}
+    public BigDecimal getBigDecimal() {
+        return TypeUtils.castToBigDecimal(originalValue);
+    }
 
-	public BigInteger getBigInteger() {
-		return TypeUtils.castToBigInteger(originalValue);
-	}
+    public BigInteger getBigInteger() {
+        return TypeUtils.castToBigInteger(originalValue);
+    }
 
-	public java.sql.Timestamp getTimestamp() {
-		return TypeUtils.castToTimestamp(originalValue);
-	}
+    public java.sql.Timestamp getTimestamp() {
+        return TypeUtils.castToTimestamp(originalValue);
+    }
 
-	public Object getOriginalValue() {
-		return originalValue;
-	}
+    public Object getOriginalValue() {
+        return originalValue;
+    }
 }

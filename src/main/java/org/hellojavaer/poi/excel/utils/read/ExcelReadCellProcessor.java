@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,12 @@ import org.apache.poi.ss.usermodel.Cell;
  */
 public interface ExcelReadCellProcessor {
 
-	/**
-	 * @param context
-	 * @param cell
-	 * @param cellValue
-	 * @return value. if return cellValue, cellValue.getOriginalValue() will be
-	 *         set as final result.
-	 */
-	Object process(ExcelReadContext<?> context, Cell cell,
-			ExcelCellValue cellValue);
+    /**
+     * @param context
+     * @param cell
+     * @param cellValue
+     * @return value. if return cellValue, cellValue.getOriginalValue() will be
+     *         set as final result.
+     */
+    Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue);
 }

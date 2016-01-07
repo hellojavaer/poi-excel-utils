@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2015 the original author or authors.
+ * Copyright 2015-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,37 +22,35 @@ import java.io.Serializable;
  */
 public class InnerWriteCellProcessorWrapper implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long          serialVersionUID = 1L;
 
-	@SuppressWarnings("rawtypes")
-	private ExcelWriteCellProcessor processor;
-	private ExcelWriteCellValueMapping valueMapping;
+    @SuppressWarnings("rawtypes")
+    private ExcelWriteCellProcessor    processor;
+    private ExcelWriteCellValueMapping valueMapping;
 
-	@SuppressWarnings("rawtypes")
-	public InnerWriteCellProcessorWrapper(
-			ExcelWriteCellValueMapping valueMapping,
-			ExcelWriteCellProcessor processor) {
-		// this.fieldName = fieldName;
-		this.valueMapping = valueMapping;
-		this.processor = processor;
-	}
+    @SuppressWarnings("rawtypes")
+    public InnerWriteCellProcessorWrapper(ExcelWriteCellValueMapping valueMapping, ExcelWriteCellProcessor processor) {
+        // this.fieldName = fieldName;
+        this.valueMapping = valueMapping;
+        this.processor = processor;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public ExcelWriteCellProcessor getProcessor() {
-		return processor;
-	}
+    @SuppressWarnings("rawtypes")
+    public ExcelWriteCellProcessor getProcessor() {
+        return processor;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public void setProcessor(ExcelWriteCellProcessor processor) {
-		this.processor = processor;
-	}
+    @SuppressWarnings("rawtypes")
+    public void setProcessor(ExcelWriteCellProcessor processor) {
+        this.processor = processor;
+    }
 
-	public ExcelWriteCellValueMapping getValueMapping() {
-		return valueMapping;
-	}
+    public ExcelWriteCellValueMapping getValueMapping() {
+        return valueMapping;
+    }
 
-	public void setValueMapping(ExcelWriteCellValueMapping valueMapping) {
-		this.valueMapping = valueMapping;
-	}
+    public void setValueMapping(ExcelWriteCellValueMapping valueMapping) {
+        this.valueMapping = valueMapping;
+    }
 
 }
