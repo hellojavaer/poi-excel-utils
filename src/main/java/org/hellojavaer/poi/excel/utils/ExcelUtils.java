@@ -83,7 +83,7 @@ public class ExcelUtils {
             TIME_1900_01_01_00_00_00_000 = df.parse("1900-01-01 00:00:00:000").getTime();
             TIME_1900_01_02_00_00_00_000 = df.parse("1900-01-02 00:00:00:000").getTime();
         } catch (ParseException e) {
-            throw new RuntimeException("error", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -284,7 +284,7 @@ public class ExcelUtils {
         try {
             context.setCurRowData(targetClass.newInstance());
         } catch (Exception e1) {
-            throw new RuntimeException("error", e1);
+            throw new RuntimeException(e1);
         }
 
         for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMappingEntry : fieldMapping.entrySet()) {
@@ -509,7 +509,7 @@ public class ExcelUtils {
         try {
             workbook = WorkbookFactory.create(template);
         } catch (Exception e) {
-            throw new RuntimeException("error", e);
+            throw new RuntimeException(e);
         }
         writeObjectToOutputStream(true, workbook, outputStream, sheetProcessors);
     }
@@ -757,7 +757,7 @@ public class ExcelUtils {
         try {
             workbook.write(outputStream);
         } catch (IOException e) {
-            throw new RuntimeException("error", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -850,7 +850,7 @@ public class ExcelUtils {
                 try {
                     val = pd.getReadMethod().invoke(rowData, (Object[]) null);
                 } catch (Exception e) {
-                    throw new RuntimeException("error", e);
+                    throw new RuntimeException(e);
                 }
 
                 // proc cell
