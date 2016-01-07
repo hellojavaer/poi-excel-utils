@@ -26,6 +26,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 
 /**
+ * Reading excel context.
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
 public class ExcelReadContext<T> implements Serializable {

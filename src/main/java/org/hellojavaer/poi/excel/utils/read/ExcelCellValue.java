@@ -20,13 +20,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
-import org.apache.poi.ss.usermodel.Cell;
-
 import com.alibaba.fastjson.util.TypeUtils;
 
 /**
- * For {@link Cell} can't fully match java data type, this class mainly provides
- * auto type cast.
+ * provide rich methods for type castting.
  * 
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */

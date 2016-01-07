@@ -27,6 +27,7 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
 
 /**
+ * Writting excel context
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
 public class ExcelWriteContext<T> implements Serializable {

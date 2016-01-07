@@ -18,6 +18,8 @@ package org.hellojavaer.poi.excel.utils.read;
 import org.apache.poi.ss.usermodel.Cell;
 
 /**
+ * Provide you a chance to modify current read cell value before the cell value is set to target object. 
+ * 
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
 public interface ExcelReadCellProcessor {
