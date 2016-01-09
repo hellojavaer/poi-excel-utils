@@ -23,7 +23,7 @@ import org.apache.poi.ss.usermodel.Cell;
 public interface ExcelWriteCellProcessor<T> {
 
     /**
-     * Give you an opportunity, to modify cell value after system has written. <br>
+     * Provide you a chance to modify cell value after system has written. <br>
      * If null is returned, this cell will been removed.
      * 
      * @param context

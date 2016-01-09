@@ -113,6 +113,12 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * parse excel file data to java object
+     * 
+     * @param workbookInputStream
+     * @param sheetProcessors
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void readInputStreamToObject(InputStream workbookInputStream,
                                                ExcelReadSheetProcessor<?>... sheetProcessors) {
@@ -356,6 +362,12 @@ public class ExcelUtils {
         return context.getCurRowData();
     }
 
+    /**
+     * convert Cell type to ExcelCellValue type
+     * @param cell
+     * @return
+     * @see ExcelCellValue
+     */
     public static ExcelCellValue readCell(Cell cell) {
         if (cell == null) {
             return null;
@@ -501,6 +513,13 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * parse java object to excel file
+     * 
+     * @param template
+     * @param outputStream
+     * @param sheetProcessors
+     */
     public static void writeObjectToOutputStream(InputStream template, OutputStream outputStream,
                                                  ExcelWriteSheetProcessor<?>... sheetProcessors) {
         Assert.notNull(template);
@@ -515,6 +534,13 @@ public class ExcelUtils {
         writeObjectToOutputStream(true, workbook, outputStream, sheetProcessors);
     }
 
+    /**
+     * parse java object to excel file
+     * 
+     * @param fileType
+     * @param outputStream
+     * @param sheetProcessors
+     */
     public static void writeObjectToOutputStream(ExcelType fileType, OutputStream outputStream,
                                                  ExcelWriteSheetProcessor<?>... sheetProcessors) {
 
@@ -1029,6 +1055,18 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * Convert excel column character index (such as 'A','B','AC') to integer index (0-based)
+     * note: character index ignores case
+     * eg: 'A'  -> 0
+     *     'B'  -> 1
+     *     'AC' -> 28
+     *     'aC' -> 28
+     *     'Ac' -> 28
+     * @param colIndex column character index
+     * @return column integer index
+     * @see #convertColIntIndexToCharIndex
+     */
     public static int convertColCharIndexToIntIndex(String colIndex) {
         char[] chars = colIndex.toCharArray();
         int index = 0;
@@ -1050,8 +1088,13 @@ public class ExcelUtils {
     }
 
     /**
-     * @param index start from 0
-     * @return
+     * Convert excel column integer index (0-based) to character index (such as 'A','B','AC')
+     * eg: 0  -> 'A'
+     *     1  -> 'B'
+     *     28 -> 'AC'
+     * @param colIndex column integer index.
+     * @return column character index in capitals
+     * @ #convertColCharIndexToIntIndex
      */
     public static String convertColIntIndexToCharIndex(Integer index) {
         Assert.isTrue(index >= 0);
@@ -1063,5 +1106,4 @@ public class ExcelUtils {
         } while (index >= 0);
         return sb.toString();
     }
-
 }
