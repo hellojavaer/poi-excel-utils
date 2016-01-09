@@ -15,7 +15,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
-import org.hellojavaer.poi.excel.utils.TestBean.TestEnum;
+import org.hellojavaer.poi.excel.utils.TestEnum;
 import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadCellProcessor;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
@@ -113,12 +113,10 @@ public class WriteDemo2 {
         kValueMapping.put(TestEnum.CC.toString(), "Option3");
         fieldMapping.put("M", "enumField2", kValueMapping);
 
-        // if you have setted templateRowIndex, sheetIndex (or SheetName) is required.
-        // else this parameter is not necessary.
         sheetProcessor.setSheetIndex(0);
-        sheetProcessor.setRowStartIndex(1);// not necessary ,but always set
-        sheetProcessor.setFieldMapping(fieldMapping);// required
-        sheetProcessor.setTemplateRowIndex(1);// not necessary
+        sheetProcessor.setRowStartIndex(1);
+        sheetProcessor.setFieldMapping(fieldMapping);
+        sheetProcessor.setTemplateRowIndex(1);
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
@@ -212,10 +210,9 @@ public class WriteDemo2 {
         fieldMapping.put("K", "enumField2", valueMapping, false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
-        sheetProcessor.setRowStartIndex(1);// not necessary ,but always set
+        sheetProcessor.setRowStartIndex(1);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
-        // not necessary
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
             public TestBean process(ExcelReadContext<TestBean> context, Row row, TestBean t) {

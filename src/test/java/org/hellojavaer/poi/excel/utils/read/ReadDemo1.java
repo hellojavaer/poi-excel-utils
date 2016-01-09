@@ -8,7 +8,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
-import org.hellojavaer.poi.excel.utils.TestBean.TestEnum;
+import org.hellojavaer.poi.excel.utils.TestEnum;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -59,7 +59,6 @@ public class ReadDemo1 {
 
             }
         };
-
         ExcelReadFieldMapping fieldMapping = new ExcelReadFieldMapping();
         fieldMapping.put("A", "byteField");
         fieldMapping.put("B", "shortField");
@@ -89,12 +88,11 @@ public class ReadDemo1 {
         fieldMapping.put("K", "enumField2", valueMapping, false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
-        sheetProcessor.setRowStartIndex(1);// not necessary ,but always set
-        // sheetProcessor.setRowEndIndex(3);// not necessary
+        sheetProcessor.setRowStartIndex(1);//
+        // sheetProcessor.setRowEndIndex(3);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
-        sheetProcessor.setPageSize(2);// not necessary
-        // not necessary
+        sheetProcessor.setPageSize(2);//
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
             // if return null, null will not be added to reasult data list.

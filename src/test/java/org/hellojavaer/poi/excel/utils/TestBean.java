@@ -10,21 +10,17 @@ public class TestBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static enum TestEnum {
-        AA, BB, CC;
-    }
-
-    private Byte    byteField;
-    private Short   shortField;
-    private Integer intField;
-    private Long    longField;
-    private Float   floatField;
-    private Double  doubleField;
-    private Boolean boolField;
-    private String  stringField;
-    private Date    dateField;
-    private String  enumField1;
-    private String  enumField2;
+    private Byte              byteField;
+    private Short             shortField;
+    private Integer           intField;
+    private Long              longField;
+    private Float             floatField;
+    private Double            doubleField;
+    private Boolean           boolField;
+    private String            stringField;
+    private Date              dateField;
+    private String            enumField1;
+    private String            enumField2;
 
     public Byte getByteField() {
         return byteField;

@@ -47,7 +47,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
     /**
      * if you have setted( or will set) templateRowIndex, sheetIndex (or
      * SheetName) is required. <br>
-     * else this parameter is not necessary.
+     * else this parameter is unnecessary.
      * 
      * @see #setSheetName
      * @see #setTemplateRowIndex
@@ -63,7 +63,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
     /**
      * if you have setted( or will set) templateRowIndex, sheetIndex (or
      * SheetName) is required. <br>
-     * else this parameter is not necessary.
+     * else this parameter is unnecessary.
      * 
      * @see #setSheetIndex
      * @see #setTemplateRowIndex

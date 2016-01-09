@@ -77,7 +77,6 @@ public abstract class ExcelReadSheetProcessor<T> {
     }
 
     /**
-     * not necessary ,but always set
      * 
      * @param startRowIndex
      */
@@ -90,7 +89,6 @@ public abstract class ExcelReadSheetProcessor<T> {
     }
 
     /**
-     * not necessary
      * 
      * @param pageSize
      */
@@ -111,7 +109,6 @@ public abstract class ExcelReadSheetProcessor<T> {
     }
 
     /**
-     * not necessary
      * 
      * @param rowProcessor
      */
@@ -137,7 +134,6 @@ public abstract class ExcelReadSheetProcessor<T> {
     }
 
     /**
-     * not necessary
      * 
      * @param rowEndIndex
      */
