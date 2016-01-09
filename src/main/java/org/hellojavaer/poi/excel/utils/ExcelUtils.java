@@ -120,8 +120,7 @@ public class ExcelUtils {
      * @param sheetProcessors
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void readInputStreamToObject(InputStream workbookInputStream,
-                                               ExcelReadSheetProcessor<?>... sheetProcessors) {
+    public static void read(InputStream workbookInputStream, ExcelReadSheetProcessor<?>... sheetProcessors) {
         Assert.isTrue(workbookInputStream != null, "workbookInputStream can't be null");
         Assert.isTrue(sheetProcessors != null && sheetProcessors.length != 0, "sheetProcessor can't be null");
         try {
@@ -197,15 +196,14 @@ public class ExcelUtils {
                             if (i == pageCount - 1) {
                                 size = rowEndIndex - start + 1;
                             }
-                            readInputStreamToObject(context, sheet, start, size, sheetProcessor.getFieldMapping(),
-                                                    clazz, sheetProcessor.getRowProcessor());
+                            read(context, sheet, start, size, sheetProcessor.getFieldMapping(), clazz,
+                                 sheetProcessor.getRowProcessor());
                             sheetProcessor.process(context, context.getDataList());
                             context.getDataList().clear();
                         }
                     } else {
-                        readInputStreamToObject(context, sheet, startRow, rowEndIndex - startRow + 1,
-                                                sheetProcessor.getFieldMapping(), clazz,
-                                                sheetProcessor.getRowProcessor());
+                        read(context, sheet, startRow, rowEndIndex - startRow + 1, sheetProcessor.getFieldMapping(),
+                             clazz, sheetProcessor.getRowProcessor());
                         sheetProcessor.process(context, context.getDataList());
                         context.getDataList().clear();
                     }
@@ -224,9 +222,9 @@ public class ExcelUtils {
         }
     }
 
-    private static <T> void readInputStreamToObject(ExcelReadContext<T> context, Sheet sheet, int startRow,
-                                                    Integer pageSize, ExcelReadFieldMapping fieldMapping,
-                                                    Class<T> targetClass, ExcelReadRowProcessor<T> processor) {
+    private static <T> void read(ExcelReadContext<T> context, Sheet sheet, int startRow, Integer pageSize,
+                                 ExcelReadFieldMapping fieldMapping, Class<T> targetClass,
+                                 ExcelReadRowProcessor<T> processor) {
         Assert.isTrue(sheet != null, "sheet can't be null");
         Assert.isTrue(startRow >= 0, "startRow must greater than or equal to 0");
         Assert.isTrue(pageSize == null || pageSize >= 1, "pageSize == null || pageSize >= 1");
@@ -520,8 +518,8 @@ public class ExcelUtils {
      * @param outputStream
      * @param sheetProcessors
      */
-    public static void writeObjectToOutputStream(InputStream template, OutputStream outputStream,
-                                                 ExcelWriteSheetProcessor<?>... sheetProcessors) {
+    public static void write(InputStream template, OutputStream outputStream,
+                             ExcelWriteSheetProcessor<?>... sheetProcessors) {
         Assert.notNull(template);
         Assert.notNull(outputStream);
         Assert.isTrue(sheetProcessors != null && sheetProcessors.length > 0);
@@ -531,7 +529,7 @@ public class ExcelUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        writeObjectToOutputStream(true, workbook, outputStream, sheetProcessors);
+        write(true, workbook, outputStream, sheetProcessors);
     }
 
     /**
@@ -541,8 +539,8 @@ public class ExcelUtils {
      * @param outputStream
      * @param sheetProcessors
      */
-    public static void writeObjectToOutputStream(ExcelType fileType, OutputStream outputStream,
-                                                 ExcelWriteSheetProcessor<?>... sheetProcessors) {
+    public static void write(ExcelType fileType, OutputStream outputStream,
+                             ExcelWriteSheetProcessor<?>... sheetProcessors) {
 
         Assert.notNull(fileType);
         Assert.notNull(outputStream);
@@ -553,7 +551,7 @@ public class ExcelUtils {
         } else {
             workbook = new XSSFWorkbook();
         }
-        writeObjectToOutputStream(false, workbook, outputStream, sheetProcessors);
+        write(false, workbook, outputStream, sheetProcessors);
     }
 
     private static class InnerRow {
@@ -628,8 +626,8 @@ public class ExcelUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static void writeObjectToOutputStream(boolean useTemplate, Workbook workbook, OutputStream outputStream,
-                                                  ExcelWriteSheetProcessor<?>... sheetProcessors) {
+    private static void write(boolean useTemplate, Workbook workbook, OutputStream outputStream,
+                              ExcelWriteSheetProcessor<?>... sheetProcessors) {
 
         for (@SuppressWarnings("rawtypes")
         ExcelWriteSheetProcessor sheetProcessor : sheetProcessors) {

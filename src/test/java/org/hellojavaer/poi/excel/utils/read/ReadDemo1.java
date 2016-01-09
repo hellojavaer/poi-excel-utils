@@ -103,6 +103,6 @@ public class ReadDemo1 {
             }
         });
 
-        ExcelUtils.readInputStreamToObject(in, sheetProcessor);
+        ExcelUtils.read(in, sheetProcessor);
     }
 }

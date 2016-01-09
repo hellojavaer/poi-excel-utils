@@ -122,6 +122,6 @@ public class WriteDemo1 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         // sheetProcessor.setTemplateRowIndex(1);
 
-        ExcelUtils.writeObjectToOutputStream(ExcelType.XLSX, output, sheetProcessor);
+        ExcelUtils.write(ExcelType.XLSX, output, sheetProcessor);
     }
 }

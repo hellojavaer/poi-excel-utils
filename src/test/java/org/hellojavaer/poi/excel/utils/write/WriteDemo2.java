@@ -120,7 +120,7 @@ public class WriteDemo2 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setTemplateRowIndex(1);// not necessary
 
-        ExcelUtils.writeObjectToOutputStream(excelTemplate, output, sheetProcessor);
+        ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
 
     private static List<TestBean> pageQuery(long rowIndex, int pageSize) {
@@ -223,7 +223,7 @@ public class WriteDemo2 {
             }
         });
 
-        ExcelUtils.readInputStreamToObject(in, sheetProcessor);
+        ExcelUtils.read(in, sheetProcessor);
         return re;
     }
 }
