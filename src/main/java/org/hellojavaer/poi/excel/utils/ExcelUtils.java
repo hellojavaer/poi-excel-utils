@@ -1072,12 +1072,12 @@ public class ExcelUtils {
         int curStep = 1;
         for (int i = chars.length - 1; i >= 0; i--) {
             char ch = chars[i];
-            if (ch >= 'a' && ch <= 'z') {
-                index += (ch - 'a' + 1) * curStep;
-            } else if (ch >= 'A' && ch <= 'Z') {
+            if (ch >= 'A' && ch <= 'Z') {
                 index += (ch - 'A' + 1) * curStep;
+            } else if (ch >= 'a' && ch <= 'z') {
+                index += (ch - 'a' + 1) * curStep;
             } else {
-                throw new IllegalArgumentException("colIndex");
+                throw new IllegalArgumentException("colIndex must be a-z or A-Z,unexpected character:" + ch);
             }
             curStep *= baseStep;
         }
