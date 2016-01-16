@@ -307,7 +307,6 @@ public class ExcelUtils {
         short maxColIx = row.getLastCellNum();// note ,this return value is 1-based.
         short lastColIndex = (short) (maxColIx - 1);
 
-        //
         boolean emptyRow = true;
         for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMappingEntry : fieldMapping.entrySet()) {
             int curColIndex = fieldMappingEntry.getKey();// excel index;
@@ -328,7 +327,7 @@ public class ExcelUtils {
                                 emptyRow = false;
                                 break;
                             }
-                        } else if (cellType != Cell.CELL_TYPE_BLANK) {
+                        } else if (cellType != Cell.CELL_TYPE_BLANK) {// other types are all primitive types.
                             emptyRow = false;
                             break;
                         }

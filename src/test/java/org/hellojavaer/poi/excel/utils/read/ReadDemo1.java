@@ -93,7 +93,7 @@ public class ReadDemo1 {
         // sheetProcessor.setRowEndIndex(3);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
-        // sheetProcessor.setPageSize(2);//
+        sheetProcessor.setPageSize(2);//
         sheetProcessor.setSkipEmptyRow(true);
         sheetProcessor.setTrimSpace(true);
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {

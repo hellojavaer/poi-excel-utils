@@ -111,7 +111,7 @@ public class WriteDemo1 {
         fieldMapping.put("H", "stringField");
         fieldMapping.put("I", "dateField");
 
-        sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
+        sheetProcessor.setSheetIndex(0);// required. It can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setRowStartIndex(1);//
         sheetProcessor.setFieldMapping(fieldMapping);// required
         // sheetProcessor.setTemplateRowIndex(1);
