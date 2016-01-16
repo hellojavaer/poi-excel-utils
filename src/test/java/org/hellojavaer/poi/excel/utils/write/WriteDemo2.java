@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.hellojavaer.poi.excel.utils.ExcelProcessController;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
 import org.hellojavaer.poi.excel.utils.TestEnum;
@@ -54,11 +55,6 @@ public class WriteDemo2 {
                 List<TestBean> list = pageQuery(rowIndex.longValue(), pageSize);
                 rowIndex.getAndAdd(pageSize);
                 return list;
-            }
-
-            @Override
-            public Row process(ExcelWriteContext<TestBean> context, TestBean t, Row row) {
-                return row;
             }
 
             @Override
@@ -215,7 +211,8 @@ public class WriteDemo2 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
-            public TestBean process(ExcelReadContext<TestBean> context, Row row, TestBean t) {
+            public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,
+                                    TestBean t) {
                 return t;
             }
         });

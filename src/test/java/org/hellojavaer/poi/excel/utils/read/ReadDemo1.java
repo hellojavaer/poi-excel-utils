@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.hellojavaer.poi.excel.utils.ExcelProcessController;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
 import org.hellojavaer.poi.excel.utils.TestEnum;
@@ -92,11 +93,14 @@ public class ReadDemo1 {
         // sheetProcessor.setRowEndIndex(3);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
-        sheetProcessor.setPageSize(2);//
+        // sheetProcessor.setPageSize(2);//
+        sheetProcessor.setSkipEmptyRow(true);
+        sheetProcessor.setTrimSpace(true);
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
             // if return null, null will not be added to reasult data list.
-            public TestBean process(ExcelReadContext<TestBean> context, Row row, TestBean t) {
+            public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,
+                                    TestBean t) {
                 return t;
             }
         });

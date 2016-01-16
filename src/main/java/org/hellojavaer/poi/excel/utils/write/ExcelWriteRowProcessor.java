@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.hellojavaer.poi.excel.utils.read;
+package org.hellojavaer.poi.excel.utils.write;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelProcessController;
@@ -21,8 +21,16 @@ import org.hellojavaer.poi.excel.utils.ExcelProcessController;
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
-public interface ExcelReadRowProcessor<T> {
+public interface ExcelWriteRowProcessor<T> {
 
-    T process(ExcelProcessController controller, ExcelReadContext<T> context, Row row, T t);
+    /**
+     * 
+     * @param controller
+     * @param context
+     * @param t
+     * @param row
+     * @return
+     */
+    Row process(ExcelProcessController controller, ExcelWriteContext<T> context, T t, Row row);
 
 }

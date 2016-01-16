@@ -30,6 +30,8 @@ public abstract class ExcelReadSheetProcessor<T> {
     private Integer                  pageSize;
     private ExcelReadFieldMapping    fieldMapping;
     private ExcelReadRowProcessor<T> rowProcessor;
+    private boolean                  skipEmptyRow  = false;
+    private boolean                  trimSpace     = false;
 
     public abstract void beforeProcess(ExcelReadContext<T> context);
 
@@ -139,6 +141,22 @@ public abstract class ExcelReadSheetProcessor<T> {
      */
     public void setRowEndIndex(Integer rowEndIndex) {
         this.rowEndIndex = rowEndIndex;
+    }
+
+    public boolean isSkipEmptyRow() {
+        return skipEmptyRow;
+    }
+
+    public void setSkipEmptyRow(boolean skipEmptyRow) {
+        this.skipEmptyRow = skipEmptyRow;
+    }
+
+    public boolean isTrimSpace() {
+        return trimSpace;
+    }
+
+    public void setTrimSpace(boolean trimSpace) {
+        this.trimSpace = trimSpace;
     }
 
 }

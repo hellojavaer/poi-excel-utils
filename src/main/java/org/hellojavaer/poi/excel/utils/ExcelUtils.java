@@ -187,6 +187,8 @@ public class ExcelUtils {
                     } else {
                         rowEndIndex = actLastRow;
                     }
+
+                    ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                     if (pageSize != null) {
                         int total = rowEndIndex - startRow + 1;
                         int pageCount = (total + pageSize - 1) / pageSize;
@@ -196,14 +198,20 @@ public class ExcelUtils {
                             if (i == pageCount - 1) {
                                 size = rowEndIndex - start + 1;
                             }
-                            read(context, sheet, start, size, sheetProcessor.getFieldMapping(), clazz,
-                                 sheetProcessor.getRowProcessor());
+                            read(controller, context, sheet, start, size, sheetProcessor.getFieldMapping(), clazz,
+                                 sheetProcessor.getRowProcessor(), sheetProcessor.isSkipEmptyRow(),
+                                 sheetProcessor.isTrimSpace());
                             sheetProcessor.process(context, context.getDataList());
                             context.getDataList().clear();
+                            if (controller.isDoBreak()) {
+                                controller.reset();
+                                break;
+                            }
                         }
                     } else {
-                        read(context, sheet, startRow, rowEndIndex - startRow + 1, sheetProcessor.getFieldMapping(),
-                             clazz, sheetProcessor.getRowProcessor());
+                        read(controller, context, sheet, startRow, rowEndIndex - startRow + 1,
+                             sheetProcessor.getFieldMapping(), clazz, sheetProcessor.getRowProcessor(),
+                             sheetProcessor.isSkipEmptyRow(), sheetProcessor.isTrimSpace());
                         sheetProcessor.process(context, context.getDataList());
                         context.getDataList().clear();
                     }
@@ -222,9 +230,10 @@ public class ExcelUtils {
         }
     }
 
-    private static <T> void read(ExcelReadContext<T> context, Sheet sheet, int startRow, Integer pageSize,
-                                 ExcelReadFieldMapping fieldMapping, Class<T> targetClass,
-                                 ExcelReadRowProcessor<T> processor) {
+    private static <T> void read(ExcelProcessControllerImpl controller, ExcelReadContext<T> context, Sheet sheet,
+                                 int startRow, Integer pageSize, ExcelReadFieldMapping fieldMapping,
+                                 Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isSkipEmptyRow,
+                                 boolean isTrimSpace) {
         Assert.isTrue(sheet != null, "sheet can't be null");
         Assert.isTrue(startRow >= 0, "startRow must greater than or equal to 0");
         Assert.isTrue(pageSize == null || pageSize >= 1, "pageSize == null || pageSize >= 1");
@@ -248,16 +257,15 @@ public class ExcelUtils {
             context.setCurCell(null);
             context.setCurColIndex(null);
 
-            if (row == null) {
-                continue;
-            }
             T t = null;
             if (row != null) {
-                t = readRow(context, row, fieldMapping, targetClass, processor);
+                t = readRow(context, row, fieldMapping, targetClass, processor, isTrimSpace);
             }
+
             if (processor != null) {
                 try {
-                    t = processor.process(context, row, t);
+                    controller.reset();
+                    t = processor.process(controller, context, row, t);
                 } catch (RuntimeException re) {
                     if (re instanceof ExcelReadException) {
                         ExcelReadException ere = (ExcelReadException) re;
@@ -273,19 +281,70 @@ public class ExcelUtils {
                     }
                 }
             }
-            if (t != null) {// ignore empty row
-                list.add(t);
+
+            if (controller.isDoBreak()) {
+                if (!controller.isDoSkip()) {
+                    if (t != null || (t == null && isSkipEmptyRow == false)) {
+                        list.add(t);
+                    }
+                }
+                break;
+            } else {
+                if (controller.isDoSkip()) {
+                    continue;
+                } else {
+                    if (t != null || (t == null && isSkipEmptyRow == false)) {
+                        list.add(t);
+                    }
+                }
             }
         }
-        // return
     }
 
     private static <T> T readRow(ExcelReadContext<T> context, Row row, ExcelReadFieldMapping fieldMapping,
-                                 Class<T> targetClass, ExcelReadRowProcessor<T> processor) {
+                                 Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
         short minColIx = row.getFirstCellNum();
-        short maxColIx = row.getLastCellNum();// note ,this return value is
-                                              // 1-based.
+        short maxColIx = row.getLastCellNum();// note ,this return value is 1-based.
         short lastColIndex = (short) (maxColIx - 1);
+
+        //
+        boolean emptyRow = true;
+        for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMappingEntry : fieldMapping.entrySet()) {
+            int curColIndex = fieldMappingEntry.getKey();// excel index;
+            if (curColIndex > lastColIndex || curColIndex < minColIx) {
+                // ignore
+            } else {
+                Cell cell = row.getCell(curColIndex);
+                if (cell != null) {
+                    int cellType = cell.getCellType();
+                    if (isTrimSpace) {
+                        if (cellType == Cell.CELL_TYPE_STRING) {
+                            if (StringUtils.isNotBlank(cell.getStringCellValue())) {
+                                emptyRow = false;
+                                break;
+                            }
+                        } else if (cellType == Cell.CELL_TYPE_FORMULA) {
+                            if (StringUtils.isNotBlank(cell.getCellFormula())) {
+                                emptyRow = false;
+                                break;
+                            }
+                        } else if (cellType != Cell.CELL_TYPE_BLANK) {
+                            emptyRow = false;
+                            break;
+                        }
+                    } else {
+                        if (cellType != Cell.CELL_TYPE_BLANK) {
+                            emptyRow = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (emptyRow) {
+            return null;
+        }
+
         try {
             context.setCurRowData(targetClass.newInstance());
         } catch (Exception e1) {
@@ -338,6 +397,13 @@ public class ExcelUtils {
                     }
 
                     Object value = _readCell(cell);
+                    if (value != null && isTrimSpace && value instanceof String) {
+                        value = ((String) value).trim();
+                        if ("".equals(value)) {
+                            value = null;
+                        }
+                    }
+
                     value = procValueConvert(context, row, cell, entry, fieldName, value);
                     if (value != null) {// ignore null
                         try {
@@ -394,14 +460,7 @@ public class ExcelUtils {
                 e.setCode(ExcelReadException.CODE_OF_CELL_ERROR);
                 throw e;
             case Cell.CELL_TYPE_FORMULA:
-                String formula = cell.getCellFormula();
-                if (StringUtils.isBlank(formula)) {
-                    formula = null;
-                }
-                if (formula != null) {
-                    formula = formula.trim();
-                }
-                value = formula;
+                value = cell.getCellFormula();
                 break;
             case Cell.CELL_TYPE_NUMERIC:
                 Object inputValue = null;//
@@ -419,14 +478,7 @@ public class ExcelUtils {
                 value = inputValue;
                 break;
             case Cell.CELL_TYPE_STRING:
-                String str = cell.getStringCellValue();
-                if (StringUtils.isBlank(str)) {
-                    str = null;
-                }
-                if (str != null) {
-                    str = str.trim();
-                }
-                value = str;
+                value = cell.getStringCellValue();
                 break;
             default:
                 throw new RuntimeException("unsupport cell type " + cellType);
@@ -717,12 +769,17 @@ public class ExcelUtils {
                     }
                 }
 
+                // sheet
+                ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getRowStartIndex();
                 for (@SuppressWarnings("rawtypes")
                 List dataList = sheetProcessor.getDataList(context); //
                 dataList != null && !dataList.isEmpty(); //
                 dataList = sheetProcessor.getDataList(context)) {
                     for (Object rowData : dataList) {
+                        if (rowData == null && sheetProcessor.isSkipEmptyData()) {
+                            continue;
+                        }
                         // proc row
                         Row row = sheet.getRow(writeRowIndex);
                         if (row == null) {
@@ -739,13 +796,31 @@ public class ExcelUtils {
                         context.setCurColIndex(null);
                         context.setCurCell(null);
                         // ///////
+
                         if (rowData != null) {
                             writeRow(context, templateRow, row, rowData, sheetProcessor);
                         }
 
                         Row reRow = null;
                         try {
-                            reRow = sheetProcessor.process(context, rowData, row);
+                            if (sheetProcessor.getRowProcessor() != null) {
+                                controller.reset();
+                                reRow = sheetProcessor.getRowProcessor().process(controller, context, rowData, row);
+                                if (controller.isDoBreak()) {
+                                    if (controller.isDoSkip()) {
+                                        sheet.removeRow(row);
+                                        break;
+                                    } else {
+                                        break;
+                                    }
+                                } else {
+                                    if (controller.isDoSkip()) {
+                                        reRow = null;
+                                    } else {
+                                        // do nothing
+                                    }
+                                }
+                            }
                         } catch (RuntimeException e) {
                             if (e instanceof ExcelWriteException) {
                                 ExcelWriteException ewe = (ExcelWriteException) e;
@@ -853,7 +928,6 @@ public class ExcelUtils {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static void writeRow(ExcelWriteContext context, InnerRow templateRow, Row row, Object rowData,
                                  ExcelWriteSheetProcessor sheetProcessor) {
-
         boolean useTemplate = false;
         if (templateRow != null) {
             useTemplate = true;
@@ -876,6 +950,14 @@ public class ExcelUtils {
                     val = pd.getReadMethod().invoke(rowData, (Object[]) null);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
+                }
+
+                // trim
+                if (val != null && val instanceof String && sheetProcessor.isTrimSpace()) {
+                    val = ((String) val).trim();
+                    if ("".equals(val)) {
+                        val = null;
+                    }
                 }
 
                 // proc cell
@@ -1050,6 +1132,33 @@ public class ExcelUtils {
             cell.setCellValue(((Boolean) val).booleanValue());
         } else {// String
             cell.setCellValue((String) val.toString());
+        }
+    }
+
+    private static class ExcelProcessControllerImpl implements ExcelProcessController {
+
+        private boolean doSkip  = false;
+        private boolean doBreak = false;
+
+        public boolean isDoSkip() {
+            return doSkip;
+        }
+
+        public boolean isDoBreak() {
+            return doBreak;
+        }
+
+        public void doSkip() {
+            this.doSkip = true;
+        }
+
+        public void doBreak() {
+            this.doBreak = true;
+        }
+
+        public void reset() {
+            this.doBreak = false;
+            this.doSkip = false;
         }
     }
 

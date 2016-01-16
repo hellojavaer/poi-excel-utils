@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelType;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
@@ -66,11 +65,6 @@ public class WriteDemo1 {
                 } else {
                     return null;
                 }
-            }
-
-            @Override
-            public Row process(ExcelWriteContext<TestBean> context, TestBean t, Row row) {
-                return row;
             }
 
             @Override

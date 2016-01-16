@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.hellojavaer.poi.excel.utils.read;
-
-import org.apache.poi.ss.usermodel.Row;
-import org.hellojavaer.poi.excel.utils.ExcelProcessController;
+package org.hellojavaer.poi.excel.utils;
 
 /**
+ * 
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
-public interface ExcelReadRowProcessor<T> {
+public interface ExcelProcessController {
 
-    T process(ExcelProcessController controller, ExcelReadContext<T> context, Row row, T t);
+    void doSkip();
+
+    void doBreak();
 
 }

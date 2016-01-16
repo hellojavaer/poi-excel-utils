@@ -17,8 +17,6 @@ package org.hellojavaer.poi.excel.utils.write;
 
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.Row;
-
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
@@ -28,17 +26,18 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public abstract List<T> getDataList(ExcelWriteContext<T> context);
 
-    public abstract Row process(ExcelWriteContext<T> context, T t, Row row);
-
     public abstract void onException(ExcelWriteContext<T> context, RuntimeException e);
 
     public abstract void afterProcess(ExcelWriteContext<T> context);
 
-    private Integer                sheetIndex;
-    private String                 sheetName;
-    private int                    rowStartIndex = 0;
-    private Integer                templateRowIndex;
-    private ExcelWriteFieldMapping fieldMapping;
+    private Integer                   sheetIndex;
+    private String                    sheetName;
+    private int                       rowStartIndex = 0;
+    private Integer                   templateRowIndex;
+    private ExcelWriteFieldMapping    fieldMapping;
+    private ExcelWriteRowProcessor<T> rowProcessor;
+    private boolean                   skipEmptyData = false;
+    private boolean                   trimSpace     = false;
 
     public Integer getSheetIndex() {
         return sheetIndex;
@@ -102,6 +101,30 @@ public abstract class ExcelWriteSheetProcessor<T> {
      */
     public void setTemplateRowIndex(Integer templateRowIndex) {
         this.templateRowIndex = templateRowIndex;
+    }
+
+    public ExcelWriteRowProcessor<T> getRowProcessor() {
+        return rowProcessor;
+    }
+
+    public void setRowProcessor(ExcelWriteRowProcessor<T> rowProcessor) {
+        this.rowProcessor = rowProcessor;
+    }
+
+    public boolean isSkipEmptyData() {
+        return skipEmptyData;
+    }
+
+    public void setSkipEmptyData(boolean skipEmptyData) {
+        this.skipEmptyData = skipEmptyData;
+    }
+
+    public boolean isTrimSpace() {
+        return trimSpace;
+    }
+
+    public void setTrimSpace(boolean trimSpace) {
+        this.trimSpace = trimSpace;
     }
 
 }
