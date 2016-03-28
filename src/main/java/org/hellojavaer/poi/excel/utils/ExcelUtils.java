@@ -301,6 +301,7 @@ public class ExcelUtils {
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static <T> T readRow(ExcelReadContext<T> context, Row row, ExcelReadFieldMapping fieldMapping,
                                  Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
         short minColIx = row.getFirstCellNum();
@@ -389,35 +390,45 @@ public class ExcelUtils {
                             continue;
                         }
                     }
-                    PropertyDescriptor pd = org.springframework.beans.BeanUtils.getPropertyDescriptor(targetClass,
-                                                                                                      fieldName);
-                    if (pd == null || pd.getWriteMethod() == null) {
-                        continue;
-                    }
+                    //
+                    try {
+                        if (Map.class.isAssignableFrom(targetClass)) {// map
+                            Object value = _readCell(cell);
+                            if (value != null && isTrimSpace && value instanceof String) {
+                                value = ((String) value).trim();
+                                if ("".equals(value)) {
+                                    value = null;
+                                }
+                            }
+                            value = procValueConvert(context, row, cell, entry, fieldName, value);
+                            ((Map) context.getCurRowData()).put(fieldName, value);
+                        } else {// java bean
+                            PropertyDescriptor pd = org.springframework.beans.BeanUtils.getPropertyDescriptor(targetClass,
+                                                                                                              fieldName);
+                            if (pd == null || pd.getWriteMethod() == null) {
+                                continue;
+                            }
+                            Object value = _readCell(cell);
+                            if (value != null && isTrimSpace && value instanceof String) {
+                                value = ((String) value).trim();
+                                if ("".equals(value)) {
+                                    value = null;
+                                }
+                            }
+                            value = procValueConvert(context, row, cell, entry, fieldName, value);
 
-                    Object value = _readCell(cell);
-                    if (value != null && isTrimSpace && value instanceof String) {
-                        value = ((String) value).trim();
-                        if ("".equals(value)) {
-                            value = null;
-                        }
-                    }
-
-                    value = procValueConvert(context, row, cell, entry, fieldName, value);
-                    if (value != null) {// ignore null
-                        try {
                             Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
                             if (value != null && !paramType.isAssignableFrom(value.getClass())) {
                                 value = TypeUtils.cast(value, paramType, null);
                             }
                             pd.getWriteMethod().invoke(context.getCurRowData(), value);
-                        } catch (Exception e1) {
-                            ExcelReadException e = new ExcelReadException(e1);
-                            e.setRowIndex(row.getRowNum());
-                            e.setColIndex(cell.getColumnIndex());
-                            e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                            throw e;
                         }
+                    } catch (Exception e1) {
+                        ExcelReadException e = new ExcelReadException(e1);
+                        e.setRowIndex(row.getRowNum());
+                        e.setColIndex(cell.getColumnIndex());
+                        e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                        throw e;
                     }
                 }
             }
@@ -931,7 +942,6 @@ public class ExcelUtils {
         if (templateRow != null) {
             useTemplate = true;
         }
-        Class<?> clazz = rowData.getClass();
         ExcelWriteFieldMapping fieldMapping = sheetProcessor.getFieldMapping();
         for (Entry<String, Map<Integer, InnerWriteCellProcessorWrapper>> entry : fieldMapping.entrySet()) {
             String fieldName = entry.getKey();
@@ -939,26 +949,7 @@ public class ExcelUtils {
             for (Map.Entry<Integer, InnerWriteCellProcessorWrapper> fieldValueMapping : map.entrySet()) {
                 Integer colIndex = fieldValueMapping.getKey();
                 InnerWriteCellProcessorWrapper cellProcessorWrapper = fieldValueMapping.getValue();
-
-                PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, fieldName);
-                if (pd.getReadMethod() == null) {
-                    continue;
-                }
-                Object val = null;
-                try {
-                    val = pd.getReadMethod().invoke(rowData, (Object[]) null);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
-                // trim
-                if (val != null && val instanceof String && sheetProcessor.isTrimSpace()) {
-                    val = ((String) val).trim();
-                    if ("".equals(val)) {
-                        val = null;
-                    }
-                }
-
+                Object val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
                 // proc cell
                 Cell cell = row.getCell(colIndex);
                 if (cell == null) {
@@ -1034,6 +1025,32 @@ public class ExcelUtils {
                 }
             }
         }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static Object getFieldValue(Object obj, String fieldName, boolean isTrimSpace) {
+        Object val = null;
+        if (obj instanceof Map) {
+            val = ((Map) obj).get(fieldName);
+        } else {// java bean
+            PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(obj.getClass(), fieldName);
+            if (pd.getReadMethod() == null) {
+                throw new IllegalStateException("not found getter method for filed:" + fieldName);
+            }
+            try {
+                val = pd.getReadMethod().invoke(obj, (Object[]) null);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        // trim
+        if (val != null && val instanceof String && isTrimSpace) {
+            val = ((String) val).trim();
+            if ("".equals(val)) {
+                val = null;
+            }
+        }
+        return val;
     }
 
     private static void writeCell(int rowIndex, int colIndex, Cell cell, Object val, boolean userTemplate) {
