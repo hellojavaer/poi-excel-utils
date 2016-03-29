@@ -26,6 +26,8 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
@@ -54,6 +56,7 @@ public class WriteDemo2 {
                 int pageSize = 10;
                 List<TestBean> list = pageQuery(rowIndex.longValue(), pageSize);
                 rowIndex.getAndAdd(pageSize);
+                System.out.println(JSONObject.toJSON(list));
                 return list;
             }
 
@@ -75,8 +78,8 @@ public class WriteDemo2 {
 
             @Override
             public void afterProcess(ExcelWriteContext<TestBean> context) {
-                context.setCellValue(2, 0, "Test Output");
-                context.setCellValue(4, 0, "zoukaiming");
+                context.setCellValue(2, 0, 1);
+                context.setCellValue(4, 0, 2);
                 context.setCellValue(6, 0, "hellojavaer@gmail.com");
                 context.setCellValue(8, 0, new Date());
                 System.out.println("write excel end!");
@@ -95,11 +98,10 @@ public class WriteDemo2 {
         fieldMapping.put("K", "dateField");
         fieldMapping.put("L", "enumField1", new ExcelWriteCellProcessor<TestBean>() {
 
-            public Cell process(ExcelWriteContext<TestBean> context, TestBean t, Cell cell) {
+            public void process(ExcelWriteContext<TestBean> context, TestBean t, Cell cell) {
                 if (t.getEnumField1() == null) {
                     cell.setCellValue("Please select");
                 }
-                return cell;
             }
         });
         ExcelWriteCellValueMapping kValueMapping = new ExcelWriteCellValueMapping();
@@ -112,7 +114,15 @@ public class WriteDemo2 {
         sheetProcessor.setSheetIndex(0);
         sheetProcessor.setRowStartIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
-        sheetProcessor.setTemplateRowIndex(1);
+        // sheetProcessor.setTemplateRows(4, 4);
+        // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
+        //
+        // @Override
+        // public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
+        // Row row) {
+        // }
+        //
+        // });
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
@@ -124,9 +134,9 @@ public class WriteDemo2 {
         if (rowIndex >= testDataCache.size()) {
             return null;
         } else {
-            int endIndex = (int) (rowIndex + pageSize - 1);
-            if (endIndex > testDataCache.size() - 1) {
-                endIndex = testDataCache.size() - 1;
+            int endIndex = (int) (rowIndex + pageSize);
+            if (endIndex > testDataCache.size()) {
+                endIndex = testDataCache.size();
             }
             return testDataCache.subList((int) rowIndex, endIndex);
         }
