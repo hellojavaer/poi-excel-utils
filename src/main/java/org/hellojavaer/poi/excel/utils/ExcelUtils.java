@@ -758,27 +758,6 @@ public class ExcelUtils {
                 // beforeProcess
                 sheetProcessor.beforeProcess(context);
 
-                InnerRow templateRow = null;
-                if (sheetProcessor.getTemplateRowIndex() != null) {
-                    Row tempRow = sheet.getRow(sheetProcessor.getTemplateRowIndex());
-                    if (tempRow != null) {
-                        templateRow = new InnerRow();
-                        templateRow.setHeight(tempRow.getHeight());
-                        templateRow.setHeightInPoints(tempRow.getHeightInPoints());
-                        templateRow.setRowStyle(tempRow.getRowStyle());
-                        templateRow.setZeroHeight(tempRow.getZeroHeight());
-                        for (int i = tempRow.getFirstCellNum(); i <= tempRow.getLastCellNum(); i++) {
-                            Cell cell = tempRow.getCell(i);
-                            if (cell != null) {
-                                InnerCell innerCell = new InnerCell();
-                                innerCell.setCellStyle(cell.getCellStyle());
-                                innerCell.setCellType(cell.getCellType());
-                                templateRow.setCell(i, innerCell);
-                            }
-                        }
-                    }
-                }
-
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getRowStartIndex();
@@ -795,6 +774,7 @@ public class ExcelUtils {
                         if (row == null) {
                             row = sheet.createRow(writeRowIndex);
                         }
+                        InnerRow templateRow = getTemplateRow(sheet, sheetProcessor, writeRowIndex);
                         if (templateRow != null) {
                             row.setHeight(templateRow.getHeight());
                             row.setHeightInPoints(templateRow.getHeightInPoints());
@@ -805,37 +785,29 @@ public class ExcelUtils {
                         context.setCurRowIndex(writeRowIndex);
                         context.setCurColIndex(null);
                         context.setCurCell(null);
-                        // ///////
-
+                        //
                         if (rowData != null) {
                             writeRow(context, templateRow, row, rowData, sheetProcessor);
                         }
-
-                        Row reRow = null;
                         try {
                             if (sheetProcessor.getRowProcessor() != null) {
                                 controller.reset();
-                                reRow = sheetProcessor.getRowProcessor().process(controller, context, rowData, row);
-                                if (controller.isDoBreak()) {
-                                    if (controller.isDoSkip()) {
-                                        sheet.removeRow(row);
-                                        break;
-                                    } else {
-                                        break;
-                                    }
+                                sheetProcessor.getRowProcessor().process(controller, context, rowData, row);
+                                if (controller.isDoSkip()) {
+                                    sheet.removeRow(row);
                                 } else {
-                                    if (controller.isDoSkip()) {
-                                        reRow = null;
-                                    } else {
-                                        // do nothing
-                                    }
+                                    writeRowIndex++;
                                 }
+                                if (controller.isDoBreak()) {
+                                    break;
+                                }
+                            } else {
+                                writeRowIndex++;
                             }
                         } catch (RuntimeException e) {
                             if (e instanceof ExcelWriteException) {
                                 ExcelWriteException ewe = (ExcelWriteException) e;
-                                // ef.setColIndex(null); //user may want to set
-                                // this value,
+                                // ef.setColIndex(null); user may want to set this value,
                                 ewe.setRowIndex(writeRowIndex);
                                 throw ewe;
                             } else {
@@ -846,15 +818,10 @@ public class ExcelUtils {
                                 throw ewe;
                             }
                         }
-
-                        if (reRow == null) {
-                            sheet.removeRow(row);
-                        } else {
-                            writeRowIndex++;
-                        }
                     }
                 }
-                if (templateRow != null) {
+                if (sheetProcessor.getTemplateRowStartIndex() != null
+                    && sheetProcessor.getTemplateRowEndIndex() != null) {
                     writeDataValidations(sheet, sheetProcessor);
                 }
             } catch (RuntimeException e) {
@@ -871,9 +838,42 @@ public class ExcelUtils {
         }
     }
 
+    // TODO cache
+    private static InnerRow getTemplateRow(Sheet sheet, ExcelWriteSheetProcessor<?> sheetProcessor, int rowIndex) {
+        InnerRow templateRow = null;
+        if (sheetProcessor.getTemplateRowStartIndex() != null && sheetProcessor.getTemplateRowEndIndex() != null) {
+            if (rowIndex < sheetProcessor.getTemplateRowEndIndex()) {
+                return null;
+            }
+            int tempRowIndex = (rowIndex - sheetProcessor.getTemplateRowEndIndex())
+                               % (sheetProcessor.getTemplateRowEndIndex() - sheetProcessor.getTemplateRowStartIndex() + 1)
+                               + sheetProcessor.getTemplateRowStartIndex() - 1;
+            Row tempRow = sheet.getRow(tempRowIndex);
+            if (tempRow != null) {
+                templateRow = new InnerRow();
+                templateRow.setHeight(tempRow.getHeight());
+                templateRow.setHeightInPoints(tempRow.getHeightInPoints());
+                templateRow.setRowStyle(tempRow.getRowStyle());
+                templateRow.setZeroHeight(tempRow.getZeroHeight());
+                for (int i = tempRow.getFirstCellNum(); i <= tempRow.getLastCellNum(); i++) {
+                    Cell cell = tempRow.getCell(i);
+                    if (cell != null) {
+                        InnerCell innerCell = new InnerCell();
+                        innerCell.setCellStyle(cell.getCellStyle());
+                        innerCell.setCellType(cell.getCellType());
+                        templateRow.setCell(i, innerCell);
+                    }
+                }
+            }
+        }
+        return templateRow;
+    }
+
     @SuppressWarnings("rawtypes")
     private static void writeDataValidations(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
-        int templateRowIndex = sheetProcessor.getTemplateRowIndex();
+        int templateRowStartIndex = sheetProcessor.getTemplateRowStartIndex();
+        int templateRowEndIndex = sheetProcessor.getTemplateRowEndIndex();
+        int step = templateRowEndIndex - templateRowStartIndex + 1;
         int rowStartIndex = sheetProcessor.getRowStartIndex();
 
         Set<Integer> configColIndexSet = new HashSet<Integer>();
@@ -911,9 +911,8 @@ public class ExcelUtils {
                     if (cellRangeAddress == null) {
                         continue;
                     }
-                    if (templateRowIndex < cellRangeAddress.getFirstRow()
-                        || templateRowIndex > cellRangeAddress.getLastRow()) {// specify
-                                                                              // row
+                    if (templateRowEndIndex < cellRangeAddress.getFirstRow()
+                        || templateRowStartIndex > cellRangeAddress.getLastRow()) {// specify row
                         continue;
                     }
                     for (Integer configColIndex : configColIndexSet) {
@@ -921,9 +920,32 @@ public class ExcelUtils {
                             || configColIndex > cellRangeAddress.getLastColumn()) {// specify column
                             continue;
                         }
-                        newCellRangeAddressList.addCellRangeAddress(rowStartIndex, configColIndex,
-                                                                    sheet.getLastRowNum(), configColIndex);
-                        validationContains = true;
+                        if (templateRowStartIndex == templateRowEndIndex) {
+                            newCellRangeAddressList.addCellRangeAddress(rowStartIndex, configColIndex,
+                                                                        sheet.getLastRowNum(), configColIndex);
+                            validationContains = true;
+                        } else {
+                            int start = cellRangeAddress.getFirstRow() > templateRowStartIndex ? cellRangeAddress.getFirstRow() : templateRowStartIndex;
+                            int end = cellRangeAddress.getLastRow() < templateRowEndIndex ? cellRangeAddress.getLastRow() : templateRowEndIndex;
+                            long lastRow = sheet.getLastRowNum();
+                            if (lastRow > end) {
+                                long count = (lastRow - templateRowEndIndex) / step;
+                                int i = templateRowEndIndex;
+                                for (; i < count; i++) {
+                                    newCellRangeAddressList.addCellRangeAddress(start + i * step, configColIndex,
+                                                                                end + i * step, configColIndex);
+                                    validationContains = true;
+                                }
+                                long _start = start + i * step;
+                                if (_start <= lastRow) {
+                                    long _end = end + i * step;
+                                    _end = _end < lastRow ? _end : lastRow;
+                                    newCellRangeAddressList.addCellRangeAddress((int) _start, configColIndex,
+                                                                                (int) _end, configColIndex);
+                                    validationContains = true;
+                                }
+                            }
+                        }
                     }
                 }
                 if (validationContains) {
@@ -985,7 +1007,7 @@ public class ExcelUtils {
                                               useTemplate);
                                 }
                             } else if (valueMapping.getDefaultProcessor() != null) {
-                                cell = valueMapping.getDefaultProcessor().process(context, rowData, cell);
+                                valueMapping.getDefaultProcessor().process(context, rowData, cell);
                             } else {
                                 ExcelWriteException ex = new ExcelWriteException();
                                 ex.setCode(ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED);
@@ -1001,7 +1023,7 @@ public class ExcelUtils {
                 } else if (processor != null) {
                     writeCell(cell, val, useTemplate);
                     try {
-                        cell = processor.process(context, rowData, cell);
+                        processor.process(context, rowData, cell);
                     } catch (RuntimeException e) {
                         if (e instanceof ExcelWriteException) {
                             ExcelWriteException ewe = (ExcelWriteException) e;
@@ -1018,10 +1040,6 @@ public class ExcelUtils {
                     }
                 } else {
                     writeCell(cell, val, useTemplate);
-                }
-
-                if (cell == null) {
-                    row.removeCell(cell);
                 }
             }
         }

@@ -17,6 +17,8 @@ package org.hellojavaer.poi.excel.utils.write;
 
 import java.util.List;
 
+import org.springframework.util.Assert;
+
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
@@ -33,7 +35,8 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private Integer                   sheetIndex;
     private String                    sheetName;
     private int                       rowStartIndex = 0;
-    private Integer                   templateRowIndex;
+    private Integer                   templateRowStartIndex;
+    private Integer                   templateRowEndIndex;
     private ExcelWriteFieldMapping    fieldMapping;
     private ExcelWriteRowProcessor<T> rowProcessor;
     private boolean                   skipEmptyData = false;
@@ -43,14 +46,6 @@ public abstract class ExcelWriteSheetProcessor<T> {
         return sheetIndex;
     }
 
-    /**
-     * if you have setted( or will set) templateRowIndex, sheetIndex (or
-     * SheetName) is required. <br>
-     * else this parameter is unnecessary.
-     * 
-     * @see #setSheetName
-     * @see #setTemplateRowIndex
-     */
     public void setSheetIndex(Integer sheetIndex) {
         this.sheetIndex = sheetIndex;
     }
@@ -59,14 +54,6 @@ public abstract class ExcelWriteSheetProcessor<T> {
         return sheetName;
     }
 
-    /**
-     * if you have setted( or will set) templateRowIndex, sheetIndex (or
-     * SheetName) is required. <br>
-     * else this parameter is unnecessary.
-     * 
-     * @see #setSheetIndex
-     * @see #setTemplateRowIndex
-     */
     public void setSheetName(String sheetName) {
         this.sheetName = sheetName;
     }
@@ -87,20 +74,18 @@ public abstract class ExcelWriteSheetProcessor<T> {
         this.fieldMapping = fieldMapping;
     }
 
-    /**
-     * @return
-     */
-    public Integer getTemplateRowIndex() {
-        return templateRowIndex;
+    public void setTemplateRows(Integer start, Integer end) {
+        Assert.isTrue(start != null && end != null && start <= end || start == null && end == null);
+        this.templateRowStartIndex = start;
+        this.templateRowEndIndex = end;
     }
 
-    /**
-     * if set 'templateRowIndex' and
-     * 
-     * @param templateRowIndex
-     */
-    public void setTemplateRowIndex(Integer templateRowIndex) {
-        this.templateRowIndex = templateRowIndex;
+    public Integer getTemplateRowStartIndex() {
+        return templateRowStartIndex;
+    }
+
+    public Integer getTemplateRowEndIndex() {
+        return templateRowEndIndex;
     }
 
     public ExcelWriteRowProcessor<T> getRowProcessor() {
