@@ -703,6 +703,10 @@ public class ExcelUtils {
                 String sheetName = sheetProcessor.getSheetName();
                 Integer sheetIndex = sheetProcessor.getSheetIndex();
                 Sheet sheet = null;
+                if (sheetProcessor.getTemplateRowStartIndex() == null
+                    && sheetProcessor.getTemplateRowEndIndex() == null) {
+                    sheetProcessor.setTemplateRows(sheetProcessor.getRowStartIndex(), sheetProcessor.getRowStartIndex());
+                }
                 // sheetName priority,
                 if (useTemplate) {
                     if (sheetName != null) {
@@ -847,7 +851,7 @@ public class ExcelUtils {
             }
             int tempRowIndex = (rowIndex - sheetProcessor.getTemplateRowEndIndex())
                                % (sheetProcessor.getTemplateRowEndIndex() - sheetProcessor.getTemplateRowStartIndex() + 1)
-                               + sheetProcessor.getTemplateRowStartIndex() - 1;
+                               + sheetProcessor.getTemplateRowStartIndex();
             Row tempRow = sheet.getRow(tempRowIndex);
             if (tempRow != null) {
                 templateRow = new InnerRow();
