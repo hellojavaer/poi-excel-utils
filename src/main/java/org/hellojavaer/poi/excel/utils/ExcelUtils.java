@@ -846,10 +846,10 @@ public class ExcelUtils {
     private static InnerRow getTemplateRow(Sheet sheet, ExcelWriteSheetProcessor<?> sheetProcessor, int rowIndex) {
         InnerRow templateRow = null;
         if (sheetProcessor.getTemplateRowStartIndex() != null && sheetProcessor.getTemplateRowEndIndex() != null) {
-            if (rowIndex < sheetProcessor.getTemplateRowEndIndex()) {
+            if (rowIndex <= sheetProcessor.getTemplateRowEndIndex()) {
                 return null;
             }
-            int tempRowIndex = (rowIndex - sheetProcessor.getTemplateRowEndIndex())
+            int tempRowIndex = (rowIndex - sheetProcessor.getTemplateRowEndIndex() - 1)
                                % (sheetProcessor.getTemplateRowEndIndex() - sheetProcessor.getTemplateRowStartIndex() + 1)
                                + sheetProcessor.getTemplateRowStartIndex();
             Row tempRow = sheet.getRow(tempRowIndex);
