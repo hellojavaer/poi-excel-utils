@@ -29,84 +29,70 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelReadFieldMapping implements Serializable {
 
-    private static final boolean                                     DEFAULT_REQUIRE  = true;
-    private static final long                                        serialVersionUID = 1L;
+    private static final boolean                                      DEFAULT_REQUIRE  = true;
+    private static final long                                         serialVersionUID = 1L;
 
-    private Map<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMapping     = new LinkedHashMap<Integer, Map<String, InnerReadCellProcessorWrapper>>();
+    private Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
 
-    public void put(int colIndex, String fieldName) {
-        put(colIndex, fieldName, null, null, DEFAULT_REQUIRE);
+    public ExcelReadFieldMappingAttribute put(String colIndex, String fieldName) {
+        return put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), fieldName);
     }
 
-    public void put(int colIndex, String fieldName, boolean required) {
-        put(colIndex, fieldName, null, null, required);
-    }
-
-    public void put(int colIndex, String fieldName, ExcelReadCellProcessor proccessor) {
-        put(colIndex, fieldName, null, proccessor, DEFAULT_REQUIRE);
-    }
-
-    public void put(int colIndex, String fieldName, ExcelReadCellValueMapping valueMapping) {
-        put(colIndex, fieldName, valueMapping, null, DEFAULT_REQUIRE);
-    }
-
-    public void put(int colIndex, String fieldName, ExcelReadCellProcessor proccessor, boolean required) {
-        put(colIndex, fieldName, null, proccessor, required);
-    }
-
-    public void put(int colIndex, String fieldName, ExcelReadCellValueMapping valueMapping, boolean required) {
-        put(colIndex, fieldName, valueMapping, null, required);
-    }
-
-    public void put(String colIndex, String fieldName) {
-        put(colIndex, fieldName, null, null, DEFAULT_REQUIRE);
-    }
-
-    public void put(String colIndex, String fieldName, boolean required) {
-        put(colIndex, fieldName, null, null, required);
-    }
-
-    public void put(String colIndex, String fieldName, ExcelReadCellValueMapping valueMapping) {
-        put(colIndex, fieldName, valueMapping, null, DEFAULT_REQUIRE);
-    }
-
-    public void put(String colIndex, String fieldName, ExcelReadCellProcessor proccessor) {
-        put(colIndex, fieldName, null, proccessor, DEFAULT_REQUIRE);
-    }
-
-    public void put(String colIndex, String fieldName, ExcelReadCellValueMapping valueMapping, boolean required) {
-        put(colIndex, fieldName, valueMapping, null, required);
-    }
-
-    public void put(String colIndex, String fieldName, ExcelReadCellProcessor proccessor, boolean required) {
-        put(colIndex, fieldName, null, proccessor, required);
-    }
-
-    private void put(int colIndex, String fieldName, ExcelReadCellValueMapping valueMapping,
-                     ExcelReadCellProcessor proccessor, boolean required) {
-        Map<String, InnerReadCellProcessorWrapper> map = fieldMapping.get(colIndex);
+    public ExcelReadFieldMappingAttribute put(int colIndex, String fieldName) {
+        Map<String, ExcelReadFieldMappingAttribute> map = fieldMapping.get(colIndex);
         if (map == null) {
             synchronized (fieldMapping) {
                 if (fieldMapping.get(colIndex) == null) {
-                    map = new ConcurrentHashMap<String, InnerReadCellProcessorWrapper>();
+                    map = new ConcurrentHashMap<String, ExcelReadFieldMappingAttribute>();
                     fieldMapping.put(colIndex, map);
                 }
             }
         }
-        map.put(fieldName, new InnerReadCellProcessorWrapper(valueMapping, proccessor, required));
-    }
-
-    private void put(String colIndex, String fieldName, ExcelReadCellValueMapping valueMapping,
-                     ExcelReadCellProcessor proccessor, boolean required) {
-        put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), fieldName, valueMapping, proccessor, required);
+        ExcelReadFieldMappingAttribute attribute = new ExcelReadFieldMappingAttribute();
+        map.put(fieldName, attribute);
+        return attribute;
     }
 
     public boolean isEmpty() {
         return fieldMapping.isEmpty();
     }
 
-    public Set<Entry<Integer, Map<String, InnerReadCellProcessorWrapper>>> entrySet() {
+    public Set<Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>>> entrySet() {
         return fieldMapping.entrySet();
     }
 
+    public class ExcelReadFieldMappingAttribute {
+
+        private boolean                   required = false;
+        private ExcelReadCellProcessor    cellProcessor;
+        private ExcelReadCellValueMapping valueMapping;
+
+        public ExcelReadFieldMappingAttribute setRequired(boolean required) {
+            this.required = required;
+            return this;
+        }
+
+        public ExcelReadFieldMappingAttribute setCellProcessor(ExcelReadCellProcessor cellProcessor) {
+            this.cellProcessor = cellProcessor;
+            return this;
+        }
+
+        public ExcelReadFieldMappingAttribute setValueMapping(ExcelReadCellValueMapping valueMapping) {
+            this.valueMapping = valueMapping;
+            return this;
+        }
+
+        public boolean isRequired() {
+            return required;
+        }
+
+        public ExcelReadCellProcessor getCellProcessor() {
+            return cellProcessor;
+        }
+
+        public ExcelReadCellValueMapping getValueMapping() {
+            return valueMapping;
+        }
+
+    }
 }

@@ -71,7 +71,7 @@ public class ReadDemo1 {
         fieldMapping.put("H", "stringField");
         fieldMapping.put("I", "dateField");
 
-        fieldMapping.put("J", "enumField1", new ExcelReadCellProcessor() {
+        fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 // throw new ExcelReadException("test throw exception");
@@ -86,7 +86,7 @@ public class ReadDemo1 {
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
         // valueMapping.setDefaultValueWithDefaultInput();
-        fieldMapping.put("K", "enumField2", valueMapping, false);
+        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setRowStartIndex(1);//
@@ -98,7 +98,6 @@ public class ReadDemo1 {
         sheetProcessor.setTrimSpace(true);
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
-            // if return null, null will not be added to reasult data list.
             public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,
                                     TestBean t) {
                 return t;

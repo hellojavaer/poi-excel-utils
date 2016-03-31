@@ -52,16 +52,16 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadContext;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadException;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping;
+import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping.ExcelReadFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
-import org.hellojavaer.poi.excel.utils.read.InnerReadCellProcessorWrapper;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellProcessor;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellValueMapping;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteContext;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteException;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping;
+import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteSheetProcessor;
-import org.hellojavaer.poi.excel.utils.write.InnerWriteCellProcessorWrapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 
@@ -91,8 +91,8 @@ public class ExcelUtils {
     private static void readConfigParamVerify(ExcelReadSheetProcessor<?> sheetProcessor) {
         Class<?> clazz = sheetProcessor.getTargetClass();
         ExcelReadFieldMapping fieldMapping = sheetProcessor.getFieldMapping();
-        for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> indexFieldMapping : fieldMapping.entrySet()) {
-            for (Map.Entry<String, InnerReadCellProcessorWrapper> filedMapping : indexFieldMapping.getValue().entrySet()) {
+        for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> indexFieldMapping : fieldMapping.entrySet()) {
+            for (Map.Entry<String, ExcelReadFieldMappingAttribute> filedMapping : indexFieldMapping.getValue().entrySet()) {
                 String fieldName = filedMapping.getKey();
                 if (fieldName != null) {
                     PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, fieldName);
@@ -309,7 +309,7 @@ public class ExcelUtils {
         short lastColIndex = (short) (maxColIx - 1);
 
         boolean emptyRow = true;
-        for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMappingEntry : fieldMapping.entrySet()) {
+        for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMappingEntry : fieldMapping.entrySet()) {
             int curColIndex = fieldMappingEntry.getKey();// excel index;
             if (curColIndex > lastColIndex || curColIndex < minColIx) {
                 // ignore
@@ -351,15 +351,15 @@ public class ExcelUtils {
             throw new RuntimeException(e1);
         }
 
-        for (Entry<Integer, Map<String, InnerReadCellProcessorWrapper>> fieldMappingEntry : fieldMapping.entrySet()) {
+        for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMappingEntry : fieldMapping.entrySet()) {
             int curColIndex = fieldMappingEntry.getKey();// excel index;
             // proc cell
             context.setCurColIndex(curColIndex);
             context.setCurCell(null);
 
             if (curColIndex > lastColIndex || curColIndex < minColIx) {
-                Map<String, InnerReadCellProcessorWrapper> fields = fieldMappingEntry.getValue();
-                for (Map.Entry<String, InnerReadCellProcessorWrapper> field : fields.entrySet()) {
+                Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
+                for (Map.Entry<String, ExcelReadFieldMappingAttribute> field : fields.entrySet()) {
                     // @SuppressWarnings("unused")
                     // String fieldName = field.getValue().getFieldName();
                     if (field.getValue().isRequired()) {
@@ -375,10 +375,10 @@ public class ExcelUtils {
             } else {
                 Cell cell = row.getCell(curColIndex);
                 context.setCurCell(cell);
-                Map<String, InnerReadCellProcessorWrapper> fields = fieldMappingEntry.getValue();
-                for (Map.Entry<String, InnerReadCellProcessorWrapper> fieldEntry : fields.entrySet()) {
+                Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
+                for (Map.Entry<String, ExcelReadFieldMappingAttribute> fieldEntry : fields.entrySet()) {
                     String fieldName = fieldEntry.getKey();
-                    InnerReadCellProcessorWrapper entry = fieldEntry.getValue();
+                    ExcelReadFieldMappingAttribute entry = fieldEntry.getValue();
                     if (cell == null) {
                         if (entry.isRequired()) {
                             ExcelReadException e = new ExcelReadException();
@@ -497,7 +497,7 @@ public class ExcelUtils {
     }
 
     private static Object procValueConvert(ExcelReadContext<?> context, Row row, Cell cell,
-                                           InnerReadCellProcessorWrapper entry, String fieldName, Object value) {
+                                           ExcelReadFieldMappingAttribute entry, String fieldName, Object value) {
         Object convertedValue = value;
         if (entry.getValueMapping() != null) {
             ExcelReadCellValueMapping valueMapping = entry.getValueMapping();
@@ -541,9 +541,9 @@ public class ExcelUtils {
                     }
                 }
             }
-        } else if (entry.getProcessor() != null) {
+        } else if (entry.getCellProcessor() != null) {
             try {
-                convertedValue = entry.getProcessor().process(context, cell, new ExcelCellValue(value));
+                convertedValue = entry.getCellProcessor().process(context, cell, new ExcelCellValue(value));
             } catch (RuntimeException re) {
                 if (re instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) re;
@@ -881,11 +881,11 @@ public class ExcelUtils {
         int rowStartIndex = sheetProcessor.getRowStartIndex();
 
         Set<Integer> configColIndexSet = new HashSet<Integer>();
-        for (Entry<String, Map<Integer, InnerWriteCellProcessorWrapper>> fieldIndexMapping : sheetProcessor.getFieldMapping().entrySet()) {
+        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> fieldIndexMapping : sheetProcessor.getFieldMapping().entrySet()) {
             if (fieldIndexMapping == null || fieldIndexMapping.getValue() == null) {
                 continue;
             }
-            for (Entry<Integer, InnerWriteCellProcessorWrapper> indexProcessorMapping : fieldIndexMapping.getValue().entrySet()) {
+            for (Entry<Integer, ExcelWriteFieldMappingAttribute> indexProcessorMapping : fieldIndexMapping.getValue().entrySet()) {
                 if (indexProcessorMapping == null || indexProcessorMapping.getKey() == null) {
                     continue;
                 }
@@ -969,12 +969,12 @@ public class ExcelUtils {
             useTemplate = true;
         }
         ExcelWriteFieldMapping fieldMapping = sheetProcessor.getFieldMapping();
-        for (Entry<String, Map<Integer, InnerWriteCellProcessorWrapper>> entry : fieldMapping.entrySet()) {
+        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : fieldMapping.entrySet()) {
             String fieldName = entry.getKey();
-            Map<Integer, InnerWriteCellProcessorWrapper> map = entry.getValue();
-            for (Map.Entry<Integer, InnerWriteCellProcessorWrapper> fieldValueMapping : map.entrySet()) {
+            Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
+            for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> fieldValueMapping : map.entrySet()) {
                 Integer colIndex = fieldValueMapping.getKey();
-                InnerWriteCellProcessorWrapper cellProcessorWrapper = fieldValueMapping.getValue();
+                ExcelWriteFieldMappingAttribute cellProcessorWrapper = fieldValueMapping.getValue();
                 Object val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
                 // proc cell
                 Cell cell = row.getCell(colIndex);
@@ -992,7 +992,7 @@ public class ExcelUtils {
                 context.setCurCell(cell);
 
                 ExcelWriteCellValueMapping valueMapping = cellProcessorWrapper.getValueMapping();
-                ExcelWriteCellProcessor processor = cellProcessorWrapper.getProcessor();
+                ExcelWriteCellProcessor processor = cellProcessorWrapper.getCellProcessor();
                 if (valueMapping != null) {
                     String key = null;
                     if (val != null) {

@@ -41,6 +41,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private ExcelWriteRowProcessor<T> rowProcessor;
     private boolean                   skipEmptyData = false;
     private boolean                   trimSpace     = false;
+    private Integer                   headRowIndex;
 
     public Integer getSheetIndex() {
         return sheetIndex;

@@ -36,7 +36,7 @@ public class WriteDemo2 {
     private static List<TestBean> testDataCache;
 
     public static void main(String[] args) throws IOException {
-        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file2.xlsx");
+        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file3.xlsx");
         URL url = WriteDemo2.class.getResource("/");
         final String outputFilePath = url.getPath() + "output_file2.xlsx";
         File outputFile = new File(outputFilePath);
@@ -96,7 +96,7 @@ public class WriteDemo2 {
         fieldMapping.put("I", "boolField");
         fieldMapping.put("J", "stringField");
         fieldMapping.put("K", "dateField");
-        fieldMapping.put("L", "enumField1", new ExcelWriteCellProcessor<TestBean>() {
+        fieldMapping.put("L", "enumField1").setCellProcessor(new ExcelWriteCellProcessor<TestBean>() {
 
             public void process(ExcelWriteContext<TestBean> context, TestBean t, Cell cell) {
                 if (t.getEnumField1() == null) {
@@ -109,12 +109,12 @@ public class WriteDemo2 {
         kValueMapping.put(TestEnum.AA.toString(), "Option1");
         kValueMapping.put(TestEnum.BB.toString(), "Option2");
         kValueMapping.put(TestEnum.CC.toString(), "Option3");
-        fieldMapping.put("M", "enumField2", kValueMapping);
+        fieldMapping.put("M", "enumField2").setValueMapping(kValueMapping);
 
         sheetProcessor.setSheetIndex(0);
         sheetProcessor.setRowStartIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
-        // sheetProcessor.setTemplateRows(4, 4);
+        sheetProcessor.setTemplateRows(1, 2);
         // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
         //
         // @Override
@@ -196,7 +196,7 @@ public class WriteDemo2 {
         fieldMapping.put("H", "stringField");
         fieldMapping.put("I", "dateField");
 
-        fieldMapping.put("J", "enumField1", new ExcelReadCellProcessor() {
+        fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 String str = cellValue.getStringValue();
@@ -213,7 +213,7 @@ public class WriteDemo2 {
         valueMapping.put("Option1", TestEnum.AA.toString());
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
-        fieldMapping.put("K", "enumField2", valueMapping, false);
+        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setRowStartIndex(1);//
