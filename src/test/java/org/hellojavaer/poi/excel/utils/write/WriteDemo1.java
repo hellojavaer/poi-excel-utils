@@ -83,12 +83,8 @@ public class WriteDemo1 {
             @Override
             public void afterProcess(ExcelWriteContext<TestBean> context) {
 
-                Cell cell = context.setCellValue(context.getCurRowIndex() + 2,
-                                                 context.getCurRowIndex() + 4,
-                                                 0,
-                                                 8,
-                                                 "Thinks for using pio-excel-utils,if you have any questions or suggestions when you are useing,"
-                                                         + " please connect me.my email is hellojavaer@gmail.com.I'm zoukaimiing.");
+                Cell cell = context.setCellValue(context.getCurRowIndex() + 2, context.getCurRowIndex() + 4, 0, 8,
+                                                 "Thinks for using pio-excel-utils!");
                 CellStyle cellStyle = cell.getSheet().getWorkbook().createCellStyle();
                 cellStyle.setWrapText(true);
                 cell.setCellStyle(cellStyle);

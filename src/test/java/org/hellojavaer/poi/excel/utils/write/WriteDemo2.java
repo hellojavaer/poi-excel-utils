@@ -25,8 +25,6 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
 
-import com.alibaba.fastjson.JSONObject;
-
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
@@ -35,7 +33,7 @@ public class WriteDemo2 {
     private static List<TestBean> testDataCache;
 
     public static void main(String[] args) throws IOException {
-        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file3.xlsx");
+        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file2.xlsx");
         URL url = WriteDemo2.class.getResource("/");
         final String outputFilePath = url.getPath() + "output_file2.xlsx";
         File outputFile = new File(outputFilePath);
@@ -55,7 +53,6 @@ public class WriteDemo2 {
                 int pageSize = 10;
                 List<TestBean> list = pageQuery(rowIndex.longValue(), pageSize);
                 rowIndex.getAndAdd(pageSize);
-                System.out.println(JSONObject.toJSON(list));
                 return list;
             }
 
@@ -113,7 +110,7 @@ public class WriteDemo2 {
         sheetProcessor.setSheetIndex(0);
         sheetProcessor.setStartRowIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
-        sheetProcessor.setTemplateRows(1, 2);
+        // sheetProcessor.setTemplateRows(1, 2);
         // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
         //
         // @Override
