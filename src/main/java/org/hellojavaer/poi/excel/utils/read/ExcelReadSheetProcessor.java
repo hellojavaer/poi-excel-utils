@@ -25,8 +25,8 @@ public abstract class ExcelReadSheetProcessor<T> {
     private Integer                  sheetIndex;
     private String                   sheetName;
     private Class<T>                 targetClass;
-    private int                      startrowIndex = 0;
-    private Integer                  endrowIndex;
+    private int                      startRowIndex = 0;
+    private Integer                  endRowIndex;
     private Integer                  pageSize;
     private ExcelReadFieldMapping    fieldMapping;
     private ExcelReadRowProcessor<T> rowProcessor;
@@ -75,15 +75,15 @@ public abstract class ExcelReadSheetProcessor<T> {
      * @param sheetIndex
      */
     public int getStartRowIndex() {
-        return startrowIndex;
+        return startRowIndex;
     }
 
     /**
      * 
      * @param startRowIndex
      */
-    public void setStartRowIndex(int startrowIndex) {
-        this.startrowIndex = startrowIndex;
+    public void setStartRowIndex(int startRowIndex) {
+        this.startRowIndex = startRowIndex;
     }
 
     public Integer getPageSize() {
@@ -132,15 +132,15 @@ public abstract class ExcelReadSheetProcessor<T> {
     }
 
     public Integer getEndRowIndex() {
-        return endrowIndex;
+        return endRowIndex;
     }
 
     /**
      * 
      * @param rowEndIndex
      */
-    public void setEndRowIndex(Integer endrowIndex) {
-        this.endrowIndex = endrowIndex;
+    public void setEndRowIndex(Integer endRowIndex) {
+        this.endRowIndex = endRowIndex;
     }
 
     public boolean isTrimSpace() {
