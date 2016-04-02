@@ -29,7 +29,6 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelReadFieldMapping implements Serializable {
 
-    private static final boolean                                      DEFAULT_REQUIRE  = true;
     private static final long                                         serialVersionUID = 1L;
 
     private Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
