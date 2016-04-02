@@ -684,9 +684,6 @@ public class ExcelUtils {
                 dataList != null && !dataList.isEmpty(); //
                 dataList = sheetProcessor.getDataList(context)) {
                     for (Object rowData : dataList) {
-                        if (rowData == null && sheetProcessor.isSkipEmptyData()) {
-                            continue;
-                        }
                         // proc row
                         Row row = sheet.getRow(writeRowIndex);
                         if (row == null) {

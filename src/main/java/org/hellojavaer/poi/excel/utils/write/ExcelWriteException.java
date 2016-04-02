@@ -32,13 +32,13 @@ public class ExcelWriteException extends RuntimeException {
     private Integer           colIndex                        = null;
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     private int               code                            = CODE_OF_PROCESS_EXCEPTION;
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     public int getCode() {
@@ -46,7 +46,7 @@ public class ExcelWriteException extends RuntimeException {
     }
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     public void setCode(int code) {

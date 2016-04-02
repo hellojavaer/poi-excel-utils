@@ -39,7 +39,6 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private Integer                   templateRowEndIndex;
     private ExcelWriteFieldMapping    fieldMapping;
     private ExcelWriteRowProcessor<T> rowProcessor;
-    private boolean                   skipEmptyData = false;
     private boolean                   trimSpace     = false;
 
     public Integer getSheetIndex() {
@@ -94,14 +93,6 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public void setRowProcessor(ExcelWriteRowProcessor<T> rowProcessor) {
         this.rowProcessor = rowProcessor;
-    }
-
-    public boolean isSkipEmptyData() {
-        return skipEmptyData;
-    }
-
-    public void setSkipEmptyData(boolean skipEmptyData) {
-        this.skipEmptyData = skipEmptyData;
     }
 
     public boolean isTrimSpace() {
