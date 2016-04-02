@@ -17,7 +17,7 @@ package org.hellojavaer.poi.excel.utils.write;
 
 import java.util.List;
 
-import org.springframework.util.Assert;
+import org.hellojavaer.poi.excel.utils.common.Assert;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>

@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelProcessController;
@@ -200,7 +199,7 @@ public class WriteDemo2 {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 String str = cellValue.getStringValue();
-                if (StringUtils.isBlank(str)) {
+                if (str == null || str.trim().equals("")) {
                     return null;
                 } else {
                     return str;

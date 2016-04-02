@@ -46,6 +46,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hellojavaer.poi.excel.utils.common.Assert;
 import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadContext;
@@ -62,7 +63,6 @@ import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteSheetProcessor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.Assert;
 
 import com.alibaba.fastjson.util.TypeUtils;
 
@@ -94,7 +94,7 @@ public class ExcelUtils {
             for (Map.Entry<String, ExcelReadFieldMappingAttribute> filedMapping : indexFieldMapping.getValue().entrySet()) {
                 String fieldName = filedMapping.getKey();
                 if (fieldName != null) {
-                    PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, fieldName);
+                    PropertyDescriptor pd = getPropertyDescriptor(clazz, fieldName);
                     if (pd == null || pd.getWriteMethod() == null) {
                         throw new IllegalArgumentException("In fieldMapping config {colIndex:"
                                                            + indexFieldMapping.getKey() + "["
@@ -327,8 +327,7 @@ public class ExcelUtils {
                         value = procValueConvert(context, row, cell, entry, fieldName, value);
                         ((Map) context.getCurRowData()).put(fieldName, value);
                     } else {// java bean
-                        PropertyDescriptor pd = org.springframework.beans.BeanUtils.getPropertyDescriptor(targetClass,
-                                                                                                          fieldName);
+                        PropertyDescriptor pd = getPropertyDescriptor(targetClass, fieldName);
                         if (pd == null || pd.getWriteMethod() == null) {
                             continue;
                         }
@@ -966,7 +965,7 @@ public class ExcelUtils {
         if (obj instanceof Map) {
             val = ((Map) obj).get(fieldName);
         } else {// java bean
-            PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(obj.getClass(), fieldName);
+            PropertyDescriptor pd = getPropertyDescriptor(obj.getClass(), fieldName);
             if (pd.getReadMethod() == null) {
                 throw new IllegalStateException("not found getter method for filed:" + fieldName);
             }
@@ -1161,5 +1160,9 @@ public class ExcelUtils {
             index = index / 26 - 1;
         } while (index >= 0);
         return sb.toString();
+    }
+
+    private static PropertyDescriptor getPropertyDescriptor(Class<?> clazz, String propertyName) {
+        return BeanUtils.getPropertyDescriptor(clazz, propertyName);
     }
 }
