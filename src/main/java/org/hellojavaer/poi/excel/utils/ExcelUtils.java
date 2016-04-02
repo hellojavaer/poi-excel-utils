@@ -28,7 +28,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +51,6 @@ import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadContext;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadException;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping.ExcelReadFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
 import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
@@ -85,28 +83,6 @@ public class ExcelUtils {
             TIME_1900_01_02_00_00_00_000 = df.parse("1900-01-02 00:00:00:000").getTime();
         } catch (ParseException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private class InnerExcelReadFieldMappingWrapper {
-
-        private ExcelReadFieldMapping                                     instance;
-        private Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> realfieldMapping = new LinkedHashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
-
-        public ExcelReadFieldMapping getInstance() {
-            return instance;
-        }
-
-        public void setInstance(ExcelReadFieldMapping instance) {
-            this.instance = instance;
-        }
-
-        public Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> getRealfieldMapping() {
-            return realfieldMapping;
-        }
-
-        public void setRealfieldMapping(Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> realfieldMapping) {
-            this.realfieldMapping = realfieldMapping;
         }
     }
 
@@ -282,7 +258,11 @@ public class ExcelUtils {
                 } catch (RuntimeException e) {
                     sheetProcessor.onExcepton(context, e);
                 } finally {
-                    sheetProcessor.afterProcess(context);
+                    try {
+                        sheetProcessor.afterProcess(context);
+                    } catch (RuntimeException e) {
+                        sheetProcessor.onExcepton(context, e);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -671,6 +651,31 @@ public class ExcelUtils {
         }
     }
 
+    private static void writeHead(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
+        Integer headRowIndex = sheetProcessor.getHeadRowIndex();
+        if (headRowIndex != null) {
+            Row row = sheet.getRow(headRowIndex);
+            if (row == null) {
+                row = sheet.createRow(headRowIndex);
+            }
+            for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : sheetProcessor.getFieldMapping().export().entrySet()) {
+                Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
+                if (map != null) {
+                    for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> entry2 : map.entrySet()) {
+                        String head = entry2.getValue().getHead();
+                        Integer colIndex = entry2.getKey();
+                        Cell cell = row.getCell(colIndex);
+                        if (cell == null) {
+                            cell = row.createCell(colIndex);
+                        }
+                        cell.setCellValue(head);
+                    }
+                }
+            }
+        }
+
+    }
+
     @SuppressWarnings("unchecked")
     private static void write(boolean useTemplate, Workbook workbook, OutputStream outputStream,
                               ExcelWriteSheetProcessor<?>... sheetProcessors) {
@@ -735,6 +740,9 @@ public class ExcelUtils {
                 if (sheetName == null) {
                     sheetName = sheet.getSheetName();
                 }
+                // write head
+                writeHead(sheet, sheetProcessor);
+
                 // proc sheet
                 context.setCurSheet(sheet);
                 context.setCurSheetIndex(sheetIndex);
@@ -812,7 +820,11 @@ public class ExcelUtils {
             } catch (RuntimeException e) {
                 sheetProcessor.onException(context, e);
             } finally {
-                sheetProcessor.afterProcess(context);
+                try {
+                    sheetProcessor.afterProcess(context);
+                } catch (RuntimeException e) {
+                    sheetProcessor.onException(context, e);
+                }
             }
         }
 

@@ -40,6 +40,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private ExcelWriteFieldMapping    fieldMapping;
     private ExcelWriteRowProcessor<T> rowProcessor;
     private boolean                   trimSpace     = false;
+    private Integer                   headRowIndex;
 
     public Integer getSheetIndex() {
         return sheetIndex;
@@ -102,4 +103,13 @@ public abstract class ExcelWriteSheetProcessor<T> {
     public void setTrimSpace(boolean trimSpace) {
         this.trimSpace = trimSpace;
     }
+
+    public Integer getHeadRowIndex() {
+        return headRowIndex;
+    }
+
+    public void setHeadRowIndex(Integer headRowIndex) {
+        this.headRowIndex = headRowIndex;
+    }
+
 }

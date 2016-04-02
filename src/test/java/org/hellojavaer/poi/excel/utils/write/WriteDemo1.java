@@ -32,9 +32,6 @@ public class WriteDemo1 {
 
             @Override
             public void beforeProcess(ExcelWriteContext<TestBean> context) {
-                for (int col = 0; col <= 8; col++) {
-                    context.setCellValue(0, col, "field" + col);
-                }
                 System.out.println("write excel start!");
             }
 
@@ -101,19 +98,20 @@ public class WriteDemo1 {
         };
 
         ExcelWriteFieldMapping fieldMapping = new ExcelWriteFieldMapping();
-        fieldMapping.put("A", "byteField");
-        fieldMapping.put("B", "shortField");
-        fieldMapping.put("C", "intField");
-        fieldMapping.put("D", "longField");
-        fieldMapping.put("E", "floatField");
-        fieldMapping.put("F", "doubleField");
-        fieldMapping.put("G", "boolField");
-        fieldMapping.put("H", "stringField");
-        fieldMapping.put("I", "dateField");
+        fieldMapping.put("A", "byteField").setHead("A1");
+        fieldMapping.put("B", "shortField").setHead("A2");
+        fieldMapping.put("C", "intField").setHead("A3");
+        fieldMapping.put("D", "longField").setHead("A4");
+        fieldMapping.put("E", "floatField").setHead("A5");
+        fieldMapping.put("F", "doubleField").setHead("A6");
+        fieldMapping.put("G", "boolField").setHead("A7");
+        fieldMapping.put("H", "stringField").setHead("A8");
+        fieldMapping.put("I", "dateField").setHead("A9");
 
         sheetProcessor.setSheetIndex(0);// required. It can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setStartRowIndex(1);//
         sheetProcessor.setFieldMapping(fieldMapping);// required
+        sheetProcessor.setHeadRowIndex(0);
         // sheetProcessor.setTemplateRowIndex(1);
 
         ExcelUtils.write(ExcelType.XLSX, output, sheetProcessor);
