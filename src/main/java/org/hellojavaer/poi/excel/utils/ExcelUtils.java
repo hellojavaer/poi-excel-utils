@@ -205,7 +205,10 @@ public class ExcelUtils {
                         src = sheetProcessor.getFieldMapping().export();
                     }
                     convertFieldMapping(sheet, sheetProcessor, src, fieldMapping);
-                    readConfigParamVerify(sheetProcessor, fieldMapping);
+                    if (sheetProcessor.getTargetClass() != null && sheetProcessor.getFieldMapping() != null
+                        && !Map.class.isAssignableFrom(sheetProcessor.getTargetClass())) {
+                        readConfigParamVerify(sheetProcessor, fieldMapping);
+                    }
 
                     // proc sheet
                     context.setCurSheet(sheet);
