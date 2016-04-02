@@ -661,6 +661,7 @@ public class ExcelUtils {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static void writeHead(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
         Integer headRowIndex = sheetProcessor.getHeadRowIndex();
         if (headRowIndex != null) {

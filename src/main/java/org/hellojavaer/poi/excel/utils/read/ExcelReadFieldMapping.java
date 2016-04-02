@@ -52,9 +52,11 @@ public class ExcelReadFieldMapping implements Serializable {
         return fieldMapping;
     }
 
-    public class ExcelReadFieldMappingAttribute {
+    public class ExcelReadFieldMappingAttribute implements Serializable {
 
-        private boolean                   required = false;
+        private static final long         serialVersionUID = 1L;
+
+        private boolean                   required         = false;
         private ExcelReadCellProcessor    cellProcessor;
         private ExcelReadCellValueMapping valueMapping;
 

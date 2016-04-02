@@ -55,13 +55,15 @@ public class ExcelWriteFieldMapping implements Serializable {
         return fieldMapping;
     }
 
-    public class ExcelWriteFieldMappingAttribute {
+    public class ExcelWriteFieldMappingAttribute implements Serializable {
 
+        private static final long          serialVersionUID = 1L;
         @SuppressWarnings("rawtypes")
         private ExcelWriteCellProcessor    cellProcessor;
         private ExcelWriteCellValueMapping valueMapping;
         private String                     head;
 
+        @SuppressWarnings("rawtypes")
         public ExcelWriteFieldMappingAttribute setCellProcessor(ExcelWriteCellProcessor cellProcessor) {
             this.cellProcessor = cellProcessor;
             return this;
@@ -77,6 +79,7 @@ public class ExcelWriteFieldMapping implements Serializable {
             return this;
         }
 
+        @SuppressWarnings("rawtypes")
         public ExcelWriteCellProcessor getCellProcessor() {
             return cellProcessor;
         }
