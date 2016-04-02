@@ -24,8 +24,9 @@ public class ExcelWriteException extends RuntimeException {
 
     private static final long serialVersionUID                = 1L;
 
-    public static final int   CODE_OF_PROCESS_EXCEPTION       = 0;
-    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 1;
+    public static final int   CODE_OF_SHEET_NOT_EXSIT         = 0;
+    public static final int   CODE_OF_PROCESS_EXCEPTION       = 1;
+    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 2;
 
     private Integer           rowIndex                        = null;
     private String            colStrIndex                     = null;

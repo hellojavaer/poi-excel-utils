@@ -186,7 +186,10 @@ public class ExcelUtils {
                         throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
                     }
                     if (sheet == null) {
-                        throw new IllegalArgumentException("Sheet Not Found Exception. for sheet name:" + sheetName);
+                        ExcelReadException e = new ExcelReadException("Sheet Not Found Exception. for sheet name:"
+                                                                      + sheetName);
+                        e.setCode(ExcelReadException.CODE_OF_SHEET_NOT_EXSIT);
+                        throw e;
                     }
 
                     if (sheetIndex == null) {
@@ -714,7 +717,10 @@ public class ExcelUtils {
                         throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
                     }
                     if (sheet == null) {
-                        throw new IllegalArgumentException("Sheet Not Found Exception. for sheet name:" + sheetName);
+                        ExcelWriteException e = new ExcelWriteException("Sheet Not Found Exception. for sheet name:"
+                                                                        + sheetName);
+                        e.setCode(ExcelWriteException.CODE_OF_SHEET_NOT_EXSIT);
+                        throw e;
                     }
                 } else {
                     if (sheetName != null) {
