@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -199,8 +198,7 @@ public class ExcelUtils {
                                 size = rowEndIndex - start + 1;
                             }
                             read(controller, context, sheet, start, size, sheetProcessor.getFieldMapping(), clazz,
-                                 sheetProcessor.getRowProcessor(), sheetProcessor.isSkipEmptyRow(),
-                                 sheetProcessor.isTrimSpace());
+                                 sheetProcessor.getRowProcessor(), sheetProcessor.isTrimSpace());
                             sheetProcessor.process(context, context.getDataList());
                             context.getDataList().clear();
                             if (controller.isDoBreak()) {
@@ -211,7 +209,7 @@ public class ExcelUtils {
                     } else {
                         read(controller, context, sheet, startRow, rowEndIndex - startRow + 1,
                              sheetProcessor.getFieldMapping(), clazz, sheetProcessor.getRowProcessor(),
-                             sheetProcessor.isSkipEmptyRow(), sheetProcessor.isTrimSpace());
+                             sheetProcessor.isTrimSpace());
                         sheetProcessor.process(context, context.getDataList());
                         context.getDataList().clear();
                     }
@@ -232,8 +230,7 @@ public class ExcelUtils {
 
     private static <T> void read(ExcelProcessControllerImpl controller, ExcelReadContext<T> context, Sheet sheet,
                                  int startRow, Integer pageSize, ExcelReadFieldMapping fieldMapping,
-                                 Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isSkipEmptyRow,
-                                 boolean isTrimSpace) {
+                                 Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
         Assert.isTrue(sheet != null, "sheet can't be null");
         Assert.isTrue(startRow >= 0, "startRow must greater than or equal to 0");
         Assert.isTrue(pageSize == null || pageSize >= 1, "pageSize == null || pageSize >= 1");
@@ -257,11 +254,7 @@ public class ExcelUtils {
             context.setCurCell(null);
             context.setCurColIndex(null);
 
-            T t = null;
-            if (row != null) {
-                t = readRow(context, row, fieldMapping, targetClass, processor, isTrimSpace);
-            }
-
+            T t = readRow(context, row, fieldMapping, targetClass, processor, isTrimSpace);
             if (processor != null) {
                 try {
                     controller.reset();
@@ -281,22 +274,11 @@ public class ExcelUtils {
                     }
                 }
             }
-
+            if (!controller.isDoSkip()) {
+                list.add(t);
+            }
             if (controller.isDoBreak()) {
-                if (!controller.isDoSkip()) {
-                    if (t != null || (t == null && isSkipEmptyRow == false)) {
-                        list.add(t);
-                    }
-                }
                 break;
-            } else {
-                if (controller.isDoSkip()) {
-                    continue;
-                } else {
-                    if (t != null || (t == null && isSkipEmptyRow == false)) {
-                        list.add(t);
-                    }
-                }
             }
         }
     }
@@ -304,132 +286,65 @@ public class ExcelUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static <T> T readRow(ExcelReadContext<T> context, Row row, ExcelReadFieldMapping fieldMapping,
                                  Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
-        short minColIx = row.getFirstCellNum();
-        short maxColIx = row.getLastCellNum();// note ,this return value is 1-based.
-        short lastColIndex = (short) (maxColIx - 1);
-
-        boolean emptyRow = true;
-        for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMappingEntry : fieldMapping.entrySet()) {
-            int curColIndex = fieldMappingEntry.getKey();// excel index;
-            if (curColIndex > lastColIndex || curColIndex < minColIx) {
-                // ignore
-            } else {
-                Cell cell = row.getCell(curColIndex);
-                if (cell != null) {
-                    int cellType = cell.getCellType();
-                    if (isTrimSpace) {
-                        if (cellType == Cell.CELL_TYPE_STRING) {
-                            if (StringUtils.isNotBlank(cell.getStringCellValue())) {
-                                emptyRow = false;
-                                break;
-                            }
-                        } else if (cellType == Cell.CELL_TYPE_FORMULA) {
-                            if (StringUtils.isNotBlank(cell.getCellFormula())) {
-                                emptyRow = false;
-                                break;
-                            }
-                        } else if (cellType != Cell.CELL_TYPE_BLANK) {// other types are all primitive types.
-                            emptyRow = false;
-                            break;
-                        }
-                    } else {
-                        if (cellType != Cell.CELL_TYPE_BLANK) {
-                            emptyRow = false;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (emptyRow) {
-            return null;
-        }
-
         try {
             context.setCurRowData(targetClass.newInstance());
         } catch (Exception e1) {
             throw new RuntimeException(e1);
         }
-
+        int curRowIndex = context.getCurRowIndex();
         for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMappingEntry : fieldMapping.entrySet()) {
             int curColIndex = fieldMappingEntry.getKey();// excel index;
             // proc cell
             context.setCurColIndex(curColIndex);
-            context.setCurCell(null);
 
-            if (curColIndex > lastColIndex || curColIndex < minColIx) {
-                Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
-                for (Map.Entry<String, ExcelReadFieldMappingAttribute> field : fields.entrySet()) {
-                    // @SuppressWarnings("unused")
-                    // String fieldName = field.getValue().getFieldName();
-                    if (field.getValue().isRequired()) {
-                        ExcelReadException e = new ExcelReadException();
-                        e.setRowIndex(row.getRowNum());
-                        e.setColIndex(curColIndex);
-                        e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
-                        throw e;
-                    } else {
-                        // TODO SET NULL
+            Cell cell = null;
+            if (row != null) {
+                cell = row.getCell(curColIndex);
+            }
+            context.setCurCell(cell);
+
+            Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
+            for (Map.Entry<String, ExcelReadFieldMappingAttribute> fieldEntry : fields.entrySet()) {
+                String fieldName = fieldEntry.getKey();
+                ExcelReadFieldMappingAttribute entry = fieldEntry.getValue();
+                Object value = _readCell(cell);
+                if (value != null && value instanceof String && isTrimSpace) {
+                    value = ((String) value).trim();
+                    if (((String) value).length() == 0) {
+                        value = null;
                     }
                 }
-            } else {
-                Cell cell = row.getCell(curColIndex);
-                context.setCurCell(cell);
-                Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
-                for (Map.Entry<String, ExcelReadFieldMappingAttribute> fieldEntry : fields.entrySet()) {
-                    String fieldName = fieldEntry.getKey();
-                    ExcelReadFieldMappingAttribute entry = fieldEntry.getValue();
-                    if (cell == null) {
-                        if (entry.isRequired()) {
-                            ExcelReadException e = new ExcelReadException();
-                            e.setRowIndex(row.getRowNum());
-                            e.setColIndex(curColIndex);
-                            e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
-                            throw e;
-                        } else {
+                if (value == null && entry.isRequired()) {
+                    ExcelReadException e = new ExcelReadException();
+                    e.setRowIndex(curRowIndex);
+                    e.setColIndex(curColIndex);
+                    e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
+                    throw e;
+                }
+                //
+                try {
+                    if (Map.class.isAssignableFrom(targetClass)) {// map
+                        value = procValueConvert(context, row, cell, entry, fieldName, value);
+                        ((Map) context.getCurRowData()).put(fieldName, value);
+                    } else {// java bean
+                        PropertyDescriptor pd = org.springframework.beans.BeanUtils.getPropertyDescriptor(targetClass,
+                                                                                                          fieldName);
+                        if (pd == null || pd.getWriteMethod() == null) {
                             continue;
                         }
-                    }
-                    //
-                    try {
-                        if (Map.class.isAssignableFrom(targetClass)) {// map
-                            Object value = _readCell(cell);
-                            if (value != null && isTrimSpace && value instanceof String) {
-                                value = ((String) value).trim();
-                                if ("".equals(value)) {
-                                    value = null;
-                                }
-                            }
-                            value = procValueConvert(context, row, cell, entry, fieldName, value);
-                            ((Map) context.getCurRowData()).put(fieldName, value);
-                        } else {// java bean
-                            PropertyDescriptor pd = org.springframework.beans.BeanUtils.getPropertyDescriptor(targetClass,
-                                                                                                              fieldName);
-                            if (pd == null || pd.getWriteMethod() == null) {
-                                continue;
-                            }
-                            Object value = _readCell(cell);
-                            if (value != null && isTrimSpace && value instanceof String) {
-                                value = ((String) value).trim();
-                                if ("".equals(value)) {
-                                    value = null;
-                                }
-                            }
-                            value = procValueConvert(context, row, cell, entry, fieldName, value);
-
-                            Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
-                            if (value != null && !paramType.isAssignableFrom(value.getClass())) {
-                                value = TypeUtils.cast(value, paramType, null);
-                            }
-                            pd.getWriteMethod().invoke(context.getCurRowData(), value);
+                        value = procValueConvert(context, row, cell, entry, fieldName, value);
+                        Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
+                        if (value != null && !paramType.isAssignableFrom(value.getClass())) {
+                            value = TypeUtils.cast(value, paramType, null);
                         }
-                    } catch (Exception e1) {
-                        ExcelReadException e = new ExcelReadException(e1);
-                        e.setRowIndex(row.getRowNum());
-                        e.setColIndex(cell.getColumnIndex());
-                        e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                        throw e;
+                        pd.getWriteMethod().invoke(context.getCurRowData(), value);
                     }
+                } catch (Exception e1) {
+                    ExcelReadException e = new ExcelReadException(e1);
+                    e.setRowIndex(curRowIndex);
+                    e.setColIndex(curColIndex);
+                    e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                    throw e;
                 }
             }
         }
@@ -443,15 +358,14 @@ public class ExcelUtils {
      * @see ExcelCellValue
      */
     public static ExcelCellValue readCell(Cell cell) {
-        if (cell == null) {
-            return null;
-        } else {
-            Object val = _readCell(cell);
-            return new ExcelCellValue(val);
-        }
+        Object val = _readCell(cell);
+        return new ExcelCellValue(val);
     }
 
     private static Object _readCell(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
         int cellType = cell.getCellType();
         Object value = null;
         switch (cellType) {
