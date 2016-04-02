@@ -18,32 +18,28 @@ package org.hellojavaer.poi.excel.utils.read;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hellojavaer.poi.excel.utils.ExcelUtils;
+import org.hellojavaer.poi.excel.utils.common.Assert;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
 public class ExcelReadFieldMapping implements Serializable {
 
-    private static final long                                         serialVersionUID = 1L;
+    private static final long                                        serialVersionUID = 1L;
 
-    private Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
+    private Map<String, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<String, Map<String, ExcelReadFieldMappingAttribute>>();
 
-    public ExcelReadFieldMappingAttribute put(String colIndex, String fieldName) {
-        return put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), fieldName);
-    }
-
-    public ExcelReadFieldMappingAttribute put(int colIndex, String fieldName) {
-        Map<String, ExcelReadFieldMappingAttribute> map = fieldMapping.get(colIndex);
+    public ExcelReadFieldMappingAttribute put(String colIndexOrColName, String fieldName) {
+        Assert.notNull(colIndexOrColName);
+        Assert.notNull(fieldName);
+        Map<String, ExcelReadFieldMappingAttribute> map = fieldMapping.get(colIndexOrColName);
         if (map == null) {
             synchronized (fieldMapping) {
-                if (fieldMapping.get(colIndex) == null) {
+                if (fieldMapping.get(colIndexOrColName) == null) {
                     map = new ConcurrentHashMap<String, ExcelReadFieldMappingAttribute>();
-                    fieldMapping.put(colIndex, map);
+                    fieldMapping.put(colIndexOrColName, map);
                 }
             }
         }
@@ -52,12 +48,8 @@ public class ExcelReadFieldMapping implements Serializable {
         return attribute;
     }
 
-    public boolean isEmpty() {
-        return fieldMapping.isEmpty();
-    }
-
-    public Set<Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>>> entrySet() {
-        return fieldMapping.entrySet();
+    public Map<String, Map<String, ExcelReadFieldMappingAttribute>> export() {
+        return fieldMapping;
     }
 
     public class ExcelReadFieldMappingAttribute {

@@ -89,7 +89,7 @@ public class ReadDemo1 {
         fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
-        sheetProcessor.setRowStartIndex(1);//
+        sheetProcessor.setStartRowIndex(1);//
         // sheetProcessor.setRowEndIndex(3);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required

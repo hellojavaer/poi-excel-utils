@@ -111,7 +111,7 @@ public class WriteDemo2 {
         fieldMapping.put("M", "enumField2").setValueMapping(kValueMapping);
 
         sheetProcessor.setSheetIndex(0);
-        sheetProcessor.setRowStartIndex(1);
+        sheetProcessor.setStartRowIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
         sheetProcessor.setTemplateRows(1, 2);
         // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
@@ -215,7 +215,7 @@ public class WriteDemo2 {
         fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
-        sheetProcessor.setRowStartIndex(1);//
+        sheetProcessor.setStartRowIndex(1);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {

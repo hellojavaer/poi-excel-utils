@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,9 +88,72 @@ public class ExcelUtils {
         }
     }
 
-    private static void readConfigParamVerify(ExcelReadSheetProcessor<?> sheetProcessor) {
+    private class InnerExcelReadFieldMappingWrapper {
+
+        private ExcelReadFieldMapping                                     instance;
+        private Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> realfieldMapping = new LinkedHashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
+
+        public ExcelReadFieldMapping getInstance() {
+            return instance;
+        }
+
+        public void setInstance(ExcelReadFieldMapping instance) {
+            this.instance = instance;
+        }
+
+        public Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> getRealfieldMapping() {
+            return realfieldMapping;
+        }
+
+        public void setRealfieldMapping(Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> realfieldMapping) {
+            this.realfieldMapping = realfieldMapping;
+        }
+    }
+
+    private static void convertFieldMapping(Sheet sheet, ExcelReadSheetProcessor<?> sheetProcessor,
+                                            Map<String, Map<String, ExcelReadFieldMappingAttribute>> src,
+                                            Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> tar) {
+        if (src == null) {
+            return;
+        }
+        Integer headRowIndex = sheetProcessor.getHeadRowIndex();
+        Map<String, Integer> colCache = new HashMap<String, Integer>();
+        if (headRowIndex != null) {
+            Row row = sheet.getRow(headRowIndex);
+            if (row != null) {
+                int start = row.getFirstCellNum();
+                int end = row.getLastCellNum();
+                for (int i = start; i < end; i++) {
+                    Cell cell = row.getCell(i);
+                    Object cellValue = _readCell(cell);
+                    if (cellValue != null) {
+                        String strVal = cellValue.toString().trim();
+                        colCache.put(strVal, i);
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String, Map<String, ExcelReadFieldMappingAttribute>> entry : src.entrySet()) {
+            String colIndexOrColName = entry.getKey();
+            Integer colIndex = null;
+            if (headRowIndex == null) {
+                colIndex = convertColCharIndexToIntIndex(colIndexOrColName);
+            } else {
+                colIndex = colCache.get(colIndexOrColName);
+                if (colIndex == null) {
+                    throw new IllegalStateException("For sheet:" + sheet.getSheetName() + " headRowIndex:"
+                                                    + headRowIndex + " can't find colum named:" + colIndexOrColName);
+                }
+            }
+            tar.put(colIndex, entry.getValue());
+        }
+    }
+
+    private static void readConfigParamVerify(ExcelReadSheetProcessor<?> sheetProcessor,
+                                              Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping) {
         Class<?> clazz = sheetProcessor.getTargetClass();
-        ExcelReadFieldMapping fieldMapping = sheetProcessor.getFieldMapping();
+
         for (Entry<Integer, Map<String, ExcelReadFieldMappingAttribute>> indexFieldMapping : fieldMapping.entrySet()) {
             for (Map.Entry<String, ExcelReadFieldMappingAttribute> filedMapping : indexFieldMapping.getValue().entrySet()) {
                 String fieldName = filedMapping.getKey();
@@ -125,7 +189,6 @@ public class ExcelUtils {
         try {
             Workbook workbook = WorkbookFactory.create(workbookInputStream);
             for (ExcelReadSheetProcessor<?> sheetProcessor : sheetProcessors) {
-                readConfigParamVerify(sheetProcessor);
                 ExcelReadContext context = new ExcelReadContext();
                 try {
                     Class clazz = sheetProcessor.getTargetClass();
@@ -156,6 +219,10 @@ public class ExcelUtils {
                     if (sheetName == null) {
                         sheetName = sheet.getSheetName();
                     }
+                    // do check
+                    Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping = new HashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
+                    convertFieldMapping(sheet, sheetProcessor, sheetProcessor.getFieldMapping().export(), fieldMapping);
+                    readConfigParamVerify(sheetProcessor, fieldMapping);
 
                     // proc sheet
                     context.setCurSheet(sheet);
@@ -176,8 +243,8 @@ public class ExcelUtils {
                     }
 
                     Integer pageSize = sheetProcessor.getPageSize();
-                    int startRow = sheetProcessor.getRowStartIndex();
-                    Integer rowEndIndex = sheetProcessor.getRowEndIndex();
+                    int startRow = sheetProcessor.getStartRowIndex();
+                    Integer rowEndIndex = sheetProcessor.getEndRowIndex();
                     int actLastRow = sheet.getLastRowNum();
                     if (rowEndIndex != null) {
                         if (rowEndIndex > actLastRow) {
@@ -197,7 +264,7 @@ public class ExcelUtils {
                             if (i == pageCount - 1) {
                                 size = rowEndIndex - start + 1;
                             }
-                            read(controller, context, sheet, start, size, sheetProcessor.getFieldMapping(), clazz,
+                            read(controller, context, sheet, start, size, fieldMapping, clazz,
                                  sheetProcessor.getRowProcessor(), sheetProcessor.isTrimSpace());
                             sheetProcessor.process(context, context.getDataList());
                             context.getDataList().clear();
@@ -207,9 +274,8 @@ public class ExcelUtils {
                             }
                         }
                     } else {
-                        read(controller, context, sheet, startRow, rowEndIndex - startRow + 1,
-                             sheetProcessor.getFieldMapping(), clazz, sheetProcessor.getRowProcessor(),
-                             sheetProcessor.isTrimSpace());
+                        read(controller, context, sheet, startRow, rowEndIndex - startRow + 1, fieldMapping, clazz,
+                             sheetProcessor.getRowProcessor(), sheetProcessor.isTrimSpace());
                         sheetProcessor.process(context, context.getDataList());
                         context.getDataList().clear();
                     }
@@ -229,13 +295,14 @@ public class ExcelUtils {
     }
 
     private static <T> void read(ExcelProcessControllerImpl controller, ExcelReadContext<T> context, Sheet sheet,
-                                 int startRow, Integer pageSize, ExcelReadFieldMapping fieldMapping,
+                                 int startRow, Integer pageSize,
+                                 Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping,
                                  Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
         Assert.isTrue(sheet != null, "sheet can't be null");
         Assert.isTrue(startRow >= 0, "startRow must greater than or equal to 0");
         Assert.isTrue(pageSize == null || pageSize >= 1, "pageSize == null || pageSize >= 1");
         Assert.isTrue(fieldMapping != null, "fieldMapping can't be null");
-        Assert.isTrue(targetClass != null, "clazz can't be null");
+        // Assert.isTrue(targetClass != null, "clazz can't be null");
 
         List<T> list = context.getDataList();
         if (sheet.getPhysicalNumberOfRows() == 0) {
@@ -254,7 +321,10 @@ public class ExcelUtils {
             context.setCurCell(null);
             context.setCurColIndex(null);
 
-            T t = readRow(context, row, fieldMapping, targetClass, processor, isTrimSpace);
+            T t = null;
+            if (!fieldMapping.isEmpty()) {
+                t = readRow(context, row, fieldMapping, targetClass, processor, isTrimSpace);
+            }
             if (processor != null) {
                 try {
                     controller.reset();
@@ -284,7 +354,8 @@ public class ExcelUtils {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <T> T readRow(ExcelReadContext<T> context, Row row, ExcelReadFieldMapping fieldMapping,
+    private static <T> T readRow(ExcelReadContext<T> context, Row row,
+                                 Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping,
                                  Class<T> targetClass, ExcelReadRowProcessor<T> processor, boolean isTrimSpace) {
         try {
             context.setCurRowData(targetClass.newInstance());
@@ -616,9 +687,9 @@ public class ExcelUtils {
                 String sheetName = sheetProcessor.getSheetName();
                 Integer sheetIndex = sheetProcessor.getSheetIndex();
                 Sheet sheet = null;
-                if (sheetProcessor.getTemplateRowStartIndex() == null
-                    && sheetProcessor.getTemplateRowEndIndex() == null) {
-                    sheetProcessor.setTemplateRows(sheetProcessor.getRowStartIndex(), sheetProcessor.getRowStartIndex());
+                if (sheetProcessor.getTemplateStartRowIndex() == null
+                    && sheetProcessor.getTemplateEndRowIndex() == null) {
+                    sheetProcessor.setTemplateRows(sheetProcessor.getStartRowIndex(), sheetProcessor.getStartRowIndex());
                 }
                 // sheetName priority,
                 if (useTemplate) {
@@ -677,7 +748,7 @@ public class ExcelUtils {
 
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
-                int writeRowIndex = sheetProcessor.getRowStartIndex();
+                int writeRowIndex = sheetProcessor.getStartRowIndex();
                 for (@SuppressWarnings("rawtypes")
                 List dataList = sheetProcessor.getDataList(context); //
                 dataList != null && !dataList.isEmpty(); //
@@ -734,8 +805,8 @@ public class ExcelUtils {
                         }
                     }
                 }
-                if (sheetProcessor.getTemplateRowStartIndex() != null
-                    && sheetProcessor.getTemplateRowEndIndex() != null) {
+                if (sheetProcessor.getTemplateStartRowIndex() != null
+                    && sheetProcessor.getTemplateEndRowIndex() != null) {
                     writeDataValidations(sheet, sheetProcessor);
                 }
             } catch (RuntimeException e) {
@@ -755,13 +826,13 @@ public class ExcelUtils {
     // TODO cache
     private static InnerRow getTemplateRow(Sheet sheet, ExcelWriteSheetProcessor<?> sheetProcessor, int rowIndex) {
         InnerRow templateRow = null;
-        if (sheetProcessor.getTemplateRowStartIndex() != null && sheetProcessor.getTemplateRowEndIndex() != null) {
-            if (rowIndex <= sheetProcessor.getTemplateRowEndIndex()) {
+        if (sheetProcessor.getTemplateStartRowIndex() != null && sheetProcessor.getTemplateEndRowIndex() != null) {
+            if (rowIndex <= sheetProcessor.getTemplateEndRowIndex()) {
                 return null;
             }
-            int tempRowIndex = (rowIndex - sheetProcessor.getTemplateRowEndIndex() - 1)
-                               % (sheetProcessor.getTemplateRowEndIndex() - sheetProcessor.getTemplateRowStartIndex() + 1)
-                               + sheetProcessor.getTemplateRowStartIndex();
+            int tempRowIndex = (rowIndex - sheetProcessor.getTemplateEndRowIndex() - 1)
+                               % (sheetProcessor.getTemplateEndRowIndex() - sheetProcessor.getTemplateStartRowIndex() + 1)
+                               + sheetProcessor.getTemplateStartRowIndex();
             Row tempRow = sheet.getRow(tempRowIndex);
             if (tempRow != null) {
                 templateRow = new InnerRow();
@@ -785,13 +856,13 @@ public class ExcelUtils {
 
     @SuppressWarnings("rawtypes")
     private static void writeDataValidations(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
-        int templateRowStartIndex = sheetProcessor.getTemplateRowStartIndex();
-        int templateRowEndIndex = sheetProcessor.getTemplateRowEndIndex();
+        int templateRowStartIndex = sheetProcessor.getTemplateStartRowIndex();
+        int templateRowEndIndex = sheetProcessor.getTemplateEndRowIndex();
         int step = templateRowEndIndex - templateRowStartIndex + 1;
-        int rowStartIndex = sheetProcessor.getRowStartIndex();
+        int rowStartIndex = sheetProcessor.getStartRowIndex();
 
         Set<Integer> configColIndexSet = new HashSet<Integer>();
-        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> fieldIndexMapping : sheetProcessor.getFieldMapping().entrySet()) {
+        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> fieldIndexMapping : sheetProcessor.getFieldMapping().export().entrySet()) {
             if (fieldIndexMapping == null || fieldIndexMapping.getValue() == null) {
                 continue;
             }
@@ -879,7 +950,7 @@ public class ExcelUtils {
             useTemplate = true;
         }
         ExcelWriteFieldMapping fieldMapping = sheetProcessor.getFieldMapping();
-        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : fieldMapping.entrySet()) {
+        for (Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : fieldMapping.export().entrySet()) {
             String fieldName = entry.getKey();
             Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
             for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> fieldValueMapping : map.entrySet()) {

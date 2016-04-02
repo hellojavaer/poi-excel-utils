@@ -34,9 +34,9 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     private Integer                   sheetIndex;
     private String                    sheetName;
-    private int                       rowStartIndex = 0;
-    private Integer                   templateRowStartIndex;
-    private Integer                   templateRowEndIndex;
+    private int                       startRowIndex = 0;
+    private Integer                   templateStartRowIndex;
+    private Integer                   templateEndRowIndex;
     private ExcelWriteFieldMapping    fieldMapping;
     private ExcelWriteRowProcessor<T> rowProcessor;
     private boolean                   trimSpace     = false;
@@ -57,12 +57,12 @@ public abstract class ExcelWriteSheetProcessor<T> {
         this.sheetName = sheetName;
     }
 
-    public int getRowStartIndex() {
-        return rowStartIndex;
+    public int getStartRowIndex() {
+        return startRowIndex;
     }
 
-    public void setRowStartIndex(int rowStartIndex) {
-        this.rowStartIndex = rowStartIndex;
+    public void setStartRowIndex(int startRowIndex) {
+        this.startRowIndex = startRowIndex;
     }
 
     public ExcelWriteFieldMapping getFieldMapping() {
@@ -75,16 +75,16 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public void setTemplateRows(Integer start, Integer end) {
         Assert.isTrue(start != null && end != null && start <= end || start == null && end == null);
-        this.templateRowStartIndex = start;
-        this.templateRowEndIndex = end;
+        this.templateStartRowIndex = start;
+        this.templateEndRowIndex = end;
     }
 
-    public Integer getTemplateRowStartIndex() {
-        return templateRowStartIndex;
+    public Integer getTemplateStartRowIndex() {
+        return templateStartRowIndex;
     }
 
-    public Integer getTemplateRowEndIndex() {
-        return templateRowEndIndex;
+    public Integer getTemplateEndRowIndex() {
+        return templateEndRowIndex;
     }
 
     public ExcelWriteRowProcessor<T> getRowProcessor() {

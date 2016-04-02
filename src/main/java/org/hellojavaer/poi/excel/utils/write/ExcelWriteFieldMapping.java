@@ -18,11 +18,10 @@ package org.hellojavaer.poi.excel.utils.write;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
+import org.springframework.util.Assert;
 
 /**
  * Config the mapping between excel column(by index) to Object field(by name).
@@ -36,10 +35,8 @@ public class ExcelWriteFieldMapping implements Serializable {
     private Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<String, Map<Integer, ExcelWriteFieldMappingAttribute>>();
 
     public ExcelWriteFieldMappingAttribute put(String colIndex, String fieldName) {
-        return put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), fieldName);
-    }
-
-    public ExcelWriteFieldMappingAttribute put(int colIndex, String fieldName) {
+        Assert.notNull(colIndex);
+        Assert.notNull(fieldName);
         Map<Integer, ExcelWriteFieldMappingAttribute> map = fieldMapping.get(fieldName);
         if (map == null) {
             synchronized (fieldMapping) {
@@ -50,16 +47,12 @@ public class ExcelWriteFieldMapping implements Serializable {
             }
         }
         ExcelWriteFieldMappingAttribute attribute = new ExcelWriteFieldMappingAttribute();
-        map.put(colIndex, attribute);
+        map.put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), attribute);
         return attribute;
     }
 
-    public boolean isEmpty() {
-        return fieldMapping.isEmpty();
-    }
-
-    public Set<Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>>> entrySet() {
-        return fieldMapping.entrySet();
+    public Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> export() {
+        return fieldMapping;
     }
 
     public class ExcelWriteFieldMappingAttribute {

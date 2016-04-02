@@ -25,12 +25,13 @@ public abstract class ExcelReadSheetProcessor<T> {
     private Integer                  sheetIndex;
     private String                   sheetName;
     private Class<T>                 targetClass;
-    private int                      rowStartIndex = 0;
-    private Integer                  rowEndIndex;
+    private int                      startrowIndex = 0;
+    private Integer                  endrowIndex;
     private Integer                  pageSize;
     private ExcelReadFieldMapping    fieldMapping;
     private ExcelReadRowProcessor<T> rowProcessor;
     private boolean                  trimSpace     = false;
+    private Integer                  headRowIndex;
 
     public abstract void beforeProcess(ExcelReadContext<T> context);
 
@@ -73,16 +74,16 @@ public abstract class ExcelReadSheetProcessor<T> {
      * 
      * @param sheetIndex
      */
-    public int getRowStartIndex() {
-        return rowStartIndex;
+    public int getStartRowIndex() {
+        return startrowIndex;
     }
 
     /**
      * 
      * @param startRowIndex
      */
-    public void setRowStartIndex(int rowStartIndex) {
-        this.rowStartIndex = rowStartIndex;
+    public void setStartRowIndex(int startrowIndex) {
+        this.startrowIndex = startrowIndex;
     }
 
     public Integer getPageSize() {
@@ -130,16 +131,16 @@ public abstract class ExcelReadSheetProcessor<T> {
         this.targetClass = targetClass;
     }
 
-    public Integer getRowEndIndex() {
-        return rowEndIndex;
+    public Integer getEndRowIndex() {
+        return endrowIndex;
     }
 
     /**
      * 
      * @param rowEndIndex
      */
-    public void setRowEndIndex(Integer rowEndIndex) {
-        this.rowEndIndex = rowEndIndex;
+    public void setEndRowIndex(Integer endrowIndex) {
+        this.endrowIndex = endrowIndex;
     }
 
     public boolean isTrimSpace() {
@@ -148,6 +149,14 @@ public abstract class ExcelReadSheetProcessor<T> {
 
     public void setTrimSpace(boolean trimSpace) {
         this.trimSpace = trimSpace;
+    }
+
+    public Integer getHeadRowIndex() {
+        return headRowIndex;
+    }
+
+    public void setHeadRowIndex(Integer headRowIndex) {
+        this.headRowIndex = headRowIndex;
     }
 
 }
