@@ -197,7 +197,11 @@ public class ExcelUtils {
                     }
                     // do check
                     Map<Integer, Map<String, ExcelReadFieldMappingAttribute>> fieldMapping = new HashMap<Integer, Map<String, ExcelReadFieldMappingAttribute>>();
-                    convertFieldMapping(sheet, sheetProcessor, sheetProcessor.getFieldMapping().export(), fieldMapping);
+                    Map<String, Map<String, ExcelReadFieldMappingAttribute>> src = null;
+                    if (sheetProcessor.getFieldMapping() != null) {
+                        src = sheetProcessor.getFieldMapping().export();
+                    }
+                    convertFieldMapping(sheet, sheetProcessor, src, fieldMapping);
                     readConfigParamVerify(sheetProcessor, fieldMapping);
 
                     // proc sheet
