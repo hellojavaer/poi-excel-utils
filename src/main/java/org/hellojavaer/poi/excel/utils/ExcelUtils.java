@@ -175,13 +175,21 @@ public class ExcelUtils {
 
                     Sheet sheet = null;
                     if (sheetName != null) {
-                        sheet = workbook.getSheet(sheetName);
+                        try {
+                            sheet = workbook.getSheet(sheetName);
+                        } catch (IllegalArgumentException e) {
+                            // ignore
+                        }
                         if (sheet != null && sheetIndex != null && !sheetIndex.equals(workbook.getSheetIndex(sheet))) {
                             throw new IllegalArgumentException("sheetName[" + sheetName + "] and sheetIndex["
                                                                + sheetIndex + "] not match.");
                         }
                     } else if (sheetIndex != null) {
-                        sheet = workbook.getSheetAt(sheetIndex);
+                        try {
+                            sheet = workbook.getSheetAt(sheetIndex);
+                        } catch (IllegalArgumentException e) {
+                            // ignore
+                        }
                     } else {
                         throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
                     }
@@ -706,13 +714,21 @@ public class ExcelUtils {
                 // sheetName priority,
                 if (useTemplate) {
                     if (sheetName != null) {
-                        sheet = workbook.getSheet(sheetName);
+                        try {
+                            sheet = workbook.getSheet(sheetName);
+                        } catch (IllegalArgumentException e) {
+                            // ignore
+                        }
                         if (sheet != null && sheetIndex != null && !sheetIndex.equals(workbook.getSheetIndex(sheet))) {
                             throw new IllegalArgumentException("sheetName[" + sheetName + "] and sheetIndex["
                                                                + sheetIndex + "] not match.");
                         }
                     } else if (sheetIndex != null) {
-                        sheet = workbook.getSheetAt(sheetIndex);
+                        try {
+                            sheet = workbook.getSheetAt(sheetIndex);
+                        } catch (IllegalArgumentException e) {
+                            // ignore
+                        }
                     } else {
                         throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
                     }
