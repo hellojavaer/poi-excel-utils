@@ -31,6 +31,6 @@ public interface ExcelWriteCellProcessor<T> {
      * @param cell
      * @return
      */
-    void process(ExcelWriteContext<T> context, T t, Cell cell);
+    void process(ExcelWriteContext<T> context, Object fieldVal, Cell cell);
 
 }

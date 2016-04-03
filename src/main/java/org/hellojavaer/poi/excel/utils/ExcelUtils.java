@@ -784,6 +784,7 @@ public class ExcelUtils {
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getStartRowIndex();
                 boolean isBreak = false;
+                Map<Integer, InnerRow> cacheForTemplateRow = new HashMap<Integer, InnerRow>();
                 for (@SuppressWarnings("rawtypes")
                 List dataList = sheetProcessor.getDataList(context); //
                 dataList != null && !dataList.isEmpty(); //
@@ -794,7 +795,7 @@ public class ExcelUtils {
                         if (row == null) {
                             row = sheet.createRow(writeRowIndex);
                         }
-                        InnerRow templateRow = getTemplateRow(sheet, sheetProcessor, writeRowIndex);
+                        InnerRow templateRow = getTemplateRow(cacheForTemplateRow, sheet, sheetProcessor, writeRowIndex);
                         if (templateRow != null) {
                             row.setHeight(templateRow.getHeight());
                             row.setHeightInPoints(templateRow.getHeightInPoints());
@@ -856,8 +857,12 @@ public class ExcelUtils {
         }
     }
 
-    // TODO cache
-    private static InnerRow getTemplateRow(Sheet sheet, ExcelWriteSheetProcessor<?> sheetProcessor, int rowIndex) {
+    private static InnerRow getTemplateRow(Map<Integer, InnerRow> cache, Sheet sheet,
+                                           ExcelWriteSheetProcessor<?> sheetProcessor, int rowIndex) {
+        InnerRow cachedRow = cache.get(rowIndex);
+        if (cachedRow != null || cache.containsKey(rowIndex)) {
+            return cachedRow;
+        }
         InnerRow templateRow = null;
         if (sheetProcessor.getTemplateStartRowIndex() != null && sheetProcessor.getTemplateEndRowIndex() != null) {
             if (rowIndex <= sheetProcessor.getTemplateEndRowIndex()) {
@@ -884,6 +889,7 @@ public class ExcelUtils {
                 }
             }
         }
+        cache.put(rowIndex, templateRow);
         return templateRow;
     }
 
