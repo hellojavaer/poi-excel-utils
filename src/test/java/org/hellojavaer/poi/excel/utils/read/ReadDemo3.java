@@ -28,7 +28,7 @@ public class ReadDemo3 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
                 throw e;
             }
 

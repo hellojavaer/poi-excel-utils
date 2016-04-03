@@ -110,15 +110,15 @@ public class WriteDemo2 {
         sheetProcessor.setSheetIndex(0);
         sheetProcessor.setStartRowIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
-        // sheetProcessor.setTemplateRows(1, 2);
-        // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
-        //
-        // @Override
-        // public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
-        // Row row) {
-        // }
-        //
-        // });
+        sheetProcessor.setTemplateRows(1, 2);
+        sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
+
+            @Override
+            public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
+                                Row row) {
+            }
+
+        });
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
@@ -154,7 +154,7 @@ public class WriteDemo2 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {

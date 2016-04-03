@@ -266,13 +266,9 @@ public class ExcelUtils {
                         context.getDataList().clear();
                     }
                 } catch (RuntimeException e) {
-                    sheetProcessor.onExcepton(context, e);
+                    sheetProcessor.onException(context, e);
                 } finally {
-                    try {
-                        sheetProcessor.afterProcess(context);
-                    } catch (RuntimeException e) {
-                        sheetProcessor.onExcepton(context, e);
-                    }
+                    sheetProcessor.afterProcess(context);
                 }
             }
         } catch (Exception e) {
@@ -834,11 +830,7 @@ public class ExcelUtils {
             } catch (RuntimeException e) {
                 sheetProcessor.onException(context, e);
             } finally {
-                try {
-                    sheetProcessor.afterProcess(context);
-                } catch (RuntimeException e) {
-                    sheetProcessor.onException(context, e);
-                }
+                sheetProcessor.afterProcess(context);
             }
         }
 

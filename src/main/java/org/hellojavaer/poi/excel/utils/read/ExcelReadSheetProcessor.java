@@ -37,7 +37,7 @@ public abstract class ExcelReadSheetProcessor<T> {
 
     public abstract void process(ExcelReadContext<T> context, List<T> list);
 
-    public abstract void onExcepton(ExcelReadContext<T> context, RuntimeException e);
+    public abstract void onException(ExcelReadContext<T> context, RuntimeException e);
 
     public abstract void afterProcess(ExcelReadContext<T> context);
 

@@ -34,7 +34,7 @@ public class ReadDemo4 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<HashMap> context, RuntimeException e) {
+            public void onException(ExcelReadContext<HashMap> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {

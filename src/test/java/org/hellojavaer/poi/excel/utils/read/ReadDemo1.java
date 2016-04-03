@@ -34,7 +34,7 @@ public class ReadDemo1 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
@@ -61,7 +61,7 @@ public class ReadDemo1 {
             }
         };
         ExcelReadFieldMapping fieldMapping = new ExcelReadFieldMapping();
-        fieldMapping.put("A", "byteField").setRequired(true);
+        fieldMapping.put("A", "byteField");
         fieldMapping.put("B", "shortField");
         fieldMapping.put("C", "intField");
         fieldMapping.put("D", "longField");
@@ -81,12 +81,13 @@ public class ReadDemo1 {
         });
 
         ExcelReadCellValueMapping valueMapping = new ExcelReadCellValueMapping();
+        valueMapping.put(null, null);
         valueMapping.put("Please select", null);
         valueMapping.put("Option1", TestEnum.AA.toString());
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
         // valueMapping.setDefaultValueWithDefaultInput();
-        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
+        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setStartRowIndex(1);//

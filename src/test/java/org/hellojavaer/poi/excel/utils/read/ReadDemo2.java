@@ -34,7 +34,7 @@ public class ReadDemo2 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
