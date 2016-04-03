@@ -1044,7 +1044,7 @@ public class ExcelUtils {
                 } else if (processor != null) {
                     writeCell(cell, val, useTemplate);
                     try {
-                        processor.process(context, rowData, cell);
+                        processor.process(context, val, cell);
                     } catch (RuntimeException e) {
                         if (e instanceof ExcelWriteException) {
                             ExcelWriteException ewe = (ExcelWriteException) e;
