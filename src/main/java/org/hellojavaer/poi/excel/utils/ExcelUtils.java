@@ -783,6 +783,7 @@ public class ExcelUtils {
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getStartRowIndex();
+                boolean isBreak = false;
                 for (@SuppressWarnings("rawtypes")
                 List dataList = sheetProcessor.getDataList(context); //
                 dataList != null && !dataList.isEmpty(); //
@@ -805,23 +806,18 @@ public class ExcelUtils {
                         context.setCurColIndex(null);
                         context.setCurCell(null);
                         //
-                        if (rowData != null) {
-                            writeRow(context, templateRow, row, rowData, sheetProcessor);
-                        }
                         try {
+                            controller.reset();
                             if (sheetProcessor.getRowProcessor() != null) {
-                                controller.reset();
                                 sheetProcessor.getRowProcessor().process(controller, context, rowData, row);
-                                if (controller.isDoSkip()) {
-                                    sheet.removeRow(row);
-                                } else {
-                                    writeRowIndex++;
-                                }
-                                if (controller.isDoBreak()) {
-                                    break;
-                                }
-                            } else {
+                            }
+                            if (!controller.isDoSkip()) {
+                                writeRow(context, templateRow, row, rowData, sheetProcessor);
                                 writeRowIndex++;
+                            }
+                            if (controller.isDoBreak()) {
+                                isBreak = true;
+                                break;
                             }
                         } catch (RuntimeException e) {
                             if (e instanceof ExcelWriteException) {
@@ -837,6 +833,9 @@ public class ExcelUtils {
                                 throw ewe;
                             }
                         }
+                    }
+                    if (isBreak) {
+                        break;
                     }
                 }
                 if (sheetProcessor.getTemplateStartRowIndex() != null
@@ -990,7 +989,10 @@ public class ExcelUtils {
             for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> fieldValueMapping : map.entrySet()) {
                 Integer colIndex = fieldValueMapping.getKey();
                 ExcelWriteFieldMappingAttribute cellProcessorWrapper = fieldValueMapping.getValue();
-                Object val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
+                Object val = null;
+                if (rowData != null) {
+                    val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
+                }
                 // proc cell
                 Cell cell = row.getCell(colIndex);
                 if (cell == null) {
