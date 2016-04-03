@@ -4,7 +4,7 @@
 
 	<groupId>org.hellojavaer</groupId>
 	<artifactId>poi-excel-utils</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<description>poi-excel-utils makes the conversion between excel file data and java bean easy</description>
 
@@ -13,7 +13,7 @@
 
 	<properties>
 		<junit.version>4.11</junit.version>
-		<gpg.skip>true</gpg.skip>
+		<gpg.skip>false</gpg.skip>
 		<javadoc.skip>false</javadoc.skip>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.6</jdk.version>
