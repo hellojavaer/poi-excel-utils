@@ -1020,8 +1020,8 @@ public class ExcelUtils {
                         writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate);
                     } else {
                         if (!valueMapping.containsKey(key)) {
-                            if (valueMapping.isSetDefaultValue()) {
-                                if (valueMapping.isSetDefaultValueWithDefaultInput()) {
+                            if (valueMapping.isSettedDefaultValue()) {
+                                if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
                                     writeCell(row.getRowNum(), colIndex, cell, val, useTemplate);
                                 } else {
                                     writeCell(row.getRowNum(), colIndex, cell, valueMapping.getDefaultValue(),
