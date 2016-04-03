@@ -23,7 +23,7 @@ public class WriteDemo3 {
 
     public static void main(String[] args) throws IOException {
         URL url = WriteDemo3.class.getResource("/");
-        final String outputFilePath = url.getPath() + "output_file1.xlsx";
+        final String outputFilePath = url.getPath() + "output_file3.xlsx";
         File outputFile = new File(outputFilePath);
         outputFile.createNewFile();
         FileOutputStream output = new FileOutputStream(outputFile);

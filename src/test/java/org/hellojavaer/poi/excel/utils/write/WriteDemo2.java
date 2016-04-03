@@ -33,7 +33,7 @@ public class WriteDemo2 {
     private static List<TestBean> testDataCache;
 
     public static void main(String[] args) throws IOException {
-        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file2.xlsx");
+        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file3.xlsx");
         URL url = WriteDemo2.class.getResource("/");
         final String outputFilePath = url.getPath() + "output_file2.xlsx";
         File outputFile = new File(outputFilePath);
@@ -74,8 +74,8 @@ public class WriteDemo2 {
 
             @Override
             public void afterProcess(ExcelWriteContext<TestBean> context) {
-                context.setCellValue(2, 0, 1);
-                context.setCellValue(4, 0, 2);
+                context.setCellValue(2, 0, "Test output");
+                context.setCellValue(4, 0, "zoukaiming");
                 context.setCellValue(6, 0, "hellojavaer@gmail.com");
                 context.setCellValue(8, 0, new Date());
                 System.out.println("write excel end!");
@@ -94,8 +94,8 @@ public class WriteDemo2 {
         fieldMapping.put("K", "dateField");
         fieldMapping.put("L", "enumField1").setCellProcessor(new ExcelWriteCellProcessor<TestBean>() {
 
-            public void process(ExcelWriteContext<TestBean> context, TestBean t, Cell cell) {
-                if (t.getEnumField1() == null) {
+            public void process(ExcelWriteContext<TestBean> context, Object obj, Cell cell) {
+                if (obj == null) {
                     cell.setCellValue("Please select");
                 }
             }
@@ -111,14 +111,12 @@ public class WriteDemo2 {
         sheetProcessor.setStartRowIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
         sheetProcessor.setTemplateRows(1, 2);
-        sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
-
-            @Override
-            public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
-                                Row row) {
-            }
-
-        });
+        // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
+        // @Override
+        // public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
+        // Row row) {
+        // }
+        // });
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }

@@ -40,7 +40,6 @@ public class ReadDemo3 {
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setStartRowIndex(1);//
         // sheetProcessor.setRowEndIndex(3);//
-        sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setPageSize(2);//
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
