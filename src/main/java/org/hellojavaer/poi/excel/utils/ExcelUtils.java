@@ -475,8 +475,8 @@ public class ExcelUtils {
             convertedValue = valueMapping.get(strValue);
             if (convertedValue == null) {
                 if (!valueMapping.containsKey(strValue)) {
-                    if (valueMapping.isSetDefaultValue()) {
-                        if (valueMapping.isSetDefaultValueWithDefaultInput()) {
+                    if (valueMapping.isSettedDefaultValue()) {
+                        if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
                             convertedValue = value;
                         } else {
                             convertedValue = valueMapping.getDefaultValue();
