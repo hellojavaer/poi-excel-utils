@@ -17,10 +17,10 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
-public class ReadDemo1 {
+public class ReadDemo2 {
 
     public static void main(String[] args) throws FileNotFoundException {
-        InputStream in = ReadDemo1.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
+        InputStream in = ReadDemo2.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
         ExcelReadSheetProcessor<TestBean> sheetProcessor = new ExcelReadSheetProcessor<TestBean>() {
 
             @Override
@@ -61,17 +61,17 @@ public class ReadDemo1 {
             }
         };
         ExcelReadFieldMapping fieldMapping = new ExcelReadFieldMapping();
-        fieldMapping.put("A", "byteField").setRequired(true);
-        fieldMapping.put("B", "shortField");
-        fieldMapping.put("C", "intField");
-        fieldMapping.put("D", "longField");
-        fieldMapping.put("E", "floatField");
-        fieldMapping.put("F", "doubleField");
-        fieldMapping.put("G", "boolField");
-        fieldMapping.put("H", "stringField");
-        fieldMapping.put("I", "dateField");
+        fieldMapping.put("byte", "byteField").setRequired(true);
+        fieldMapping.put("short", "shortField");
+        fieldMapping.put("int", "intField");
+        fieldMapping.put("long", "longField");
+        fieldMapping.put("float", "floatField");
+        fieldMapping.put("double", "doubleField");
+        fieldMapping.put("boolean", "boolField");
+        fieldMapping.put("string", "stringField");
+        fieldMapping.put("date", "dateField");
 
-        fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
+        fieldMapping.put("enum1", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 // throw new ExcelReadException("test throw exception");
@@ -81,13 +81,12 @@ public class ReadDemo1 {
         });
 
         ExcelReadCellValueMapping valueMapping = new ExcelReadCellValueMapping();
-        valueMapping.put(null, null);
         valueMapping.put("Please select", null);
         valueMapping.put("Option1", TestEnum.AA.toString());
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
         // valueMapping.setDefaultValueWithDefaultInput();
-        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping);
+        fieldMapping.put("enum2", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setStartRowIndex(1);//
@@ -96,6 +95,7 @@ public class ReadDemo1 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setPageSize(2);//
         sheetProcessor.setTrimSpace(true);
+        sheetProcessor.setHeadRowIndex(0);
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
 
             public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,

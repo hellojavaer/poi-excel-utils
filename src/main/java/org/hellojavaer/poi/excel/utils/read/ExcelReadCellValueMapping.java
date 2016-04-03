@@ -32,11 +32,11 @@ import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellValueMapping;
  */
 public class ExcelReadCellValueMapping extends HashMap<String, Object> {
 
-    private static final long      serialVersionUID = 1L;
+    private static final long      serialVersionUID   = 1L;
 
-    private static final Object    DEFAULT_INPUT    = new Object();
-    private boolean                setDefaultValue  = false;
-    private Object                 defaultValue     = null;
+    private static final Object    DEFAULT_INPUT      = new Object();
+    private boolean                settedDefaultValue = false;
+    private Object                 defaultValue       = null;
     private ExcelReadCellProcessor defaultProcessor;
 
     public Object getDefaultValue() {
@@ -45,23 +45,25 @@ public class ExcelReadCellValueMapping extends HashMap<String, Object> {
 
     public void setDefaultValue(Object val) {
         this.defaultValue = val;
+        this.settedDefaultValue = true;
     }
 
     public void setDefaultValueWithDefaultInput() {
         this.defaultValue = DEFAULT_INPUT;
+        this.settedDefaultValue = true;
     }
 
     public void resetDefaultValue() {
         this.defaultValue = null;
-        this.setDefaultValue = false;
+        this.settedDefaultValue = false;
     }
 
-    public boolean isSetDefaultValue() {
-        return setDefaultValue;
+    public boolean isSettedDefaultValue() {
+        return settedDefaultValue;
     }
 
-    public boolean isSetDefaultValueWithDefaultInput() {
-        return setDefaultValue && (defaultValue == DEFAULT_INPUT);
+    public boolean isSettedDefaultValueWithDefaultInput() {
+        return settedDefaultValue && (defaultValue == DEFAULT_INPUT);
     }
 
     public ExcelReadCellProcessor getDefaultProcessor() {

@@ -2,13 +2,13 @@ package org.hellojavaer.poi.excel.utils.read;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelProcessController;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
-import org.hellojavaer.poi.excel.utils.TestBean;
 import org.hellojavaer.poi.excel.utils.TestEnum;
 
 import com.alibaba.fastjson.JSONObject;
@@ -17,24 +17,24 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
  */
-public class ReadDemo1 {
+public class ReadDemo4 {
 
     public static void main(String[] args) throws FileNotFoundException {
-        InputStream in = ReadDemo1.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
-        ExcelReadSheetProcessor<TestBean> sheetProcessor = new ExcelReadSheetProcessor<TestBean>() {
+        InputStream in = ReadDemo4.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
+        ExcelReadSheetProcessor<HashMap> sheetProcessor = new ExcelReadSheetProcessor<HashMap>() {
 
             @Override
-            public void beforeProcess(ExcelReadContext<TestBean> context) {
+            public void beforeProcess(ExcelReadContext<HashMap> context) {
 
             }
 
             @Override
-            public void process(ExcelReadContext<TestBean> context, List<TestBean> list) {
+            public void process(ExcelReadContext<HashMap> context, List<HashMap> list) {
                 System.out.println(JSONObject.toJSONString(list, SerializerFeature.WriteDateUseDateFormat));
             }
 
             @Override
-            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<HashMap> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
@@ -56,22 +56,22 @@ public class ReadDemo1 {
             }
 
             @Override
-            public void afterProcess(ExcelReadContext<TestBean> context) {
+            public void afterProcess(ExcelReadContext<HashMap> context) {
 
             }
         };
         ExcelReadFieldMapping fieldMapping = new ExcelReadFieldMapping();
-        fieldMapping.put("A", "byteField").setRequired(true);
-        fieldMapping.put("B", "shortField");
-        fieldMapping.put("C", "intField");
-        fieldMapping.put("D", "longField");
-        fieldMapping.put("E", "floatField");
-        fieldMapping.put("F", "doubleField");
-        fieldMapping.put("G", "boolField");
-        fieldMapping.put("H", "stringField");
-        fieldMapping.put("I", "dateField");
+        fieldMapping.put("byte", "byteField").setRequired(true);
+        fieldMapping.put("short", "shortField");
+        fieldMapping.put("int", "intField");
+        fieldMapping.put("long", "longField");
+        fieldMapping.put("float", "floatField");
+        fieldMapping.put("double", "doubleField");
+        fieldMapping.put("boolean", "boolField");
+        fieldMapping.put("string", "stringField");
+        fieldMapping.put("date", "dateField");
 
-        fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
+        fieldMapping.put("enum1", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 // throw new ExcelReadException("test throw exception");
@@ -81,25 +81,26 @@ public class ReadDemo1 {
         });
 
         ExcelReadCellValueMapping valueMapping = new ExcelReadCellValueMapping();
-        valueMapping.put(null, null);
         valueMapping.put("Please select", null);
         valueMapping.put("Option1", TestEnum.AA.toString());
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
         // valueMapping.setDefaultValueWithDefaultInput();
-        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping);
+        fieldMapping.put("enum2", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
         sheetProcessor.setStartRowIndex(1);//
         // sheetProcessor.setRowEndIndex(3);//
-        sheetProcessor.setTargetClass(TestBean.class);// required
+        sheetProcessor.setTargetClass(HashMap.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setPageSize(2);//
         sheetProcessor.setTrimSpace(true);
-        sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {
+        sheetProcessor.setHeadRowIndex(0);
+        sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<HashMap>() {
 
-            public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,
-                                    TestBean t) {
+            @Override
+            public HashMap process(ExcelProcessController controller, ExcelReadContext<HashMap> context, Row row,
+                                   HashMap t) {
                 return t;
             }
         });

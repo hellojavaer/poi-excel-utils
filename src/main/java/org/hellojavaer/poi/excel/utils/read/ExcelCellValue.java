@@ -87,4 +87,9 @@ public class ExcelCellValue implements Serializable {
     public Object getOriginalValue() {
         return originalValue;
     }
+
+    @Override
+    public String toString() {
+        return TypeUtils.castToString(originalValue);
+    }
 }

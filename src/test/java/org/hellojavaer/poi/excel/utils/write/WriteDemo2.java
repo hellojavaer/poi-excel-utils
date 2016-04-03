@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelProcessController;
@@ -34,7 +33,7 @@ public class WriteDemo2 {
     private static List<TestBean> testDataCache;
 
     public static void main(String[] args) throws IOException {
-        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file2.xlsx");
+        InputStream excelTemplate = WriteDemo2.class.getResourceAsStream("/excel/xlsx/template_file3.xlsx");
         URL url = WriteDemo2.class.getResource("/");
         final String outputFilePath = url.getPath() + "output_file2.xlsx";
         File outputFile = new File(outputFilePath);
@@ -75,7 +74,7 @@ public class WriteDemo2 {
 
             @Override
             public void afterProcess(ExcelWriteContext<TestBean> context) {
-                context.setCellValue(2, 0, "Test Output");
+                context.setCellValue(2, 0, "Test output");
                 context.setCellValue(4, 0, "zoukaiming");
                 context.setCellValue(6, 0, "hellojavaer@gmail.com");
                 context.setCellValue(8, 0, new Date());
@@ -93,13 +92,12 @@ public class WriteDemo2 {
         fieldMapping.put("I", "boolField");
         fieldMapping.put("J", "stringField");
         fieldMapping.put("K", "dateField");
-        fieldMapping.put("L", "enumField1", new ExcelWriteCellProcessor<TestBean>() {
+        fieldMapping.put("L", "enumField1").setCellProcessor(new ExcelWriteCellProcessor<TestBean>() {
 
-            public Cell process(ExcelWriteContext<TestBean> context, TestBean t, Cell cell) {
-                if (t.getEnumField1() == null) {
+            public void process(ExcelWriteContext<TestBean> context, Object obj, Cell cell) {
+                if (obj == null) {
                     cell.setCellValue("Please select");
                 }
-                return cell;
             }
         });
         ExcelWriteCellValueMapping kValueMapping = new ExcelWriteCellValueMapping();
@@ -107,12 +105,18 @@ public class WriteDemo2 {
         kValueMapping.put(TestEnum.AA.toString(), "Option1");
         kValueMapping.put(TestEnum.BB.toString(), "Option2");
         kValueMapping.put(TestEnum.CC.toString(), "Option3");
-        fieldMapping.put("M", "enumField2", kValueMapping);
+        fieldMapping.put("M", "enumField2").setValueMapping(kValueMapping);
 
         sheetProcessor.setSheetIndex(0);
-        sheetProcessor.setRowStartIndex(1);
+        sheetProcessor.setStartRowIndex(1);
         sheetProcessor.setFieldMapping(fieldMapping);
-        sheetProcessor.setTemplateRowIndex(1);
+        sheetProcessor.setTemplateRows(1, 2);
+        // sheetProcessor.setRowProcessor(new ExcelWriteRowProcessor<TestBean>() {
+        // @Override
+        // public void process(ExcelProcessController controller, ExcelWriteContext<TestBean> context, TestBean t,
+        // Row row) {
+        // }
+        // });
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
@@ -124,9 +128,9 @@ public class WriteDemo2 {
         if (rowIndex >= testDataCache.size()) {
             return null;
         } else {
-            int endIndex = (int) (rowIndex + pageSize - 1);
-            if (endIndex > testDataCache.size() - 1) {
-                endIndex = testDataCache.size() - 1;
+            int endIndex = (int) (rowIndex + pageSize);
+            if (endIndex > testDataCache.size()) {
+                endIndex = testDataCache.size();
             }
             return testDataCache.subList((int) rowIndex, endIndex);
         }
@@ -148,7 +152,7 @@ public class WriteDemo2 {
             }
 
             @Override
-            public void onExcepton(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelReadException) {
                     ExcelReadException ere = (ExcelReadException) e;
                     if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
@@ -186,11 +190,11 @@ public class WriteDemo2 {
         fieldMapping.put("H", "stringField");
         fieldMapping.put("I", "dateField");
 
-        fieldMapping.put("J", "enumField1", new ExcelReadCellProcessor() {
+        fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
                 String str = cellValue.getStringValue();
-                if (StringUtils.isBlank(str)) {
+                if (str == null || str.trim().equals("")) {
                     return null;
                 } else {
                     return str;
@@ -203,10 +207,10 @@ public class WriteDemo2 {
         valueMapping.put("Option1", TestEnum.AA.toString());
         valueMapping.put("Option2", TestEnum.BB.toString());
         valueMapping.put("Option3", TestEnum.CC.toString());
-        fieldMapping.put("K", "enumField2", valueMapping, false);
+        fieldMapping.put("K", "enumField2").setValueMapping(valueMapping).setRequired(false);
 
         sheetProcessor.setSheetIndex(0);// required.it can be replaced with 'setSheetName(sheetName)';
-        sheetProcessor.setRowStartIndex(1);//
+        sheetProcessor.setStartRowIndex(1);//
         sheetProcessor.setTargetClass(TestBean.class);// required
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setRowProcessor(new ExcelReadRowProcessor<TestBean>() {

@@ -24,21 +24,22 @@ public class ExcelWriteException extends RuntimeException {
 
     private static final long serialVersionUID                = 1L;
 
-    public static final int   CODE_OF_PROCESS_EXCEPTION       = 0;
-    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 1;
+    public static final int   CODE_OF_SHEET_NOT_EXSIT         = 0;
+    public static final int   CODE_OF_PROCESS_EXCEPTION       = 1;
+    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 2;
 
     private Integer           rowIndex                        = null;
     private String            colStrIndex                     = null;
     private Integer           colIndex                        = null;
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     private int               code                            = CODE_OF_PROCESS_EXCEPTION;
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     public int getCode() {
@@ -46,7 +47,7 @@ public class ExcelWriteException extends RuntimeException {
     }
 
     /**
-     * [0-99] are system reserved value.user-define value should be larger than
+     * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
     public void setCode(int code) {

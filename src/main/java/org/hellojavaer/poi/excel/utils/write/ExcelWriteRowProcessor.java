@@ -31,6 +31,6 @@ public interface ExcelWriteRowProcessor<T> {
      * @param row
      * @return
      */
-    Row process(ExcelProcessController controller, ExcelWriteContext<T> context, T t, Row row);
+    void process(ExcelProcessController controller, ExcelWriteContext<T> context, T t, Row row);
 
 }

@@ -25,19 +25,19 @@ public abstract class ExcelReadSheetProcessor<T> {
     private Integer                  sheetIndex;
     private String                   sheetName;
     private Class<T>                 targetClass;
-    private int                      rowStartIndex = 0;
-    private Integer                  rowEndIndex;
+    private int                      startRowIndex = 0;
+    private Integer                  endRowIndex;
     private Integer                  pageSize;
     private ExcelReadFieldMapping    fieldMapping;
     private ExcelReadRowProcessor<T> rowProcessor;
-    private boolean                  skipEmptyRow  = false;
     private boolean                  trimSpace     = false;
+    private Integer                  headRowIndex;
 
     public abstract void beforeProcess(ExcelReadContext<T> context);
 
     public abstract void process(ExcelReadContext<T> context, List<T> list);
 
-    public abstract void onExcepton(ExcelReadContext<T> context, RuntimeException e);
+    public abstract void onException(ExcelReadContext<T> context, RuntimeException e);
 
     public abstract void afterProcess(ExcelReadContext<T> context);
 
@@ -74,16 +74,16 @@ public abstract class ExcelReadSheetProcessor<T> {
      * 
      * @param sheetIndex
      */
-    public int getRowStartIndex() {
-        return rowStartIndex;
+    public int getStartRowIndex() {
+        return startRowIndex;
     }
 
     /**
      * 
      * @param startRowIndex
      */
-    public void setRowStartIndex(int rowStartIndex) {
-        this.rowStartIndex = rowStartIndex;
+    public void setStartRowIndex(int startRowIndex) {
+        this.startRowIndex = startRowIndex;
     }
 
     public Integer getPageSize() {
@@ -131,24 +131,16 @@ public abstract class ExcelReadSheetProcessor<T> {
         this.targetClass = targetClass;
     }
 
-    public Integer getRowEndIndex() {
-        return rowEndIndex;
+    public Integer getEndRowIndex() {
+        return endRowIndex;
     }
 
     /**
      * 
      * @param rowEndIndex
      */
-    public void setRowEndIndex(Integer rowEndIndex) {
-        this.rowEndIndex = rowEndIndex;
-    }
-
-    public boolean isSkipEmptyRow() {
-        return skipEmptyRow;
-    }
-
-    public void setSkipEmptyRow(boolean skipEmptyRow) {
-        this.skipEmptyRow = skipEmptyRow;
+    public void setEndRowIndex(Integer endRowIndex) {
+        this.endRowIndex = endRowIndex;
     }
 
     public boolean isTrimSpace() {
@@ -157,6 +149,14 @@ public abstract class ExcelReadSheetProcessor<T> {
 
     public void setTrimSpace(boolean trimSpace) {
         this.trimSpace = trimSpace;
+    }
+
+    public Integer getHeadRowIndex() {
+        return headRowIndex;
+    }
+
+    public void setHeadRowIndex(Integer headRowIndex) {
+        this.headRowIndex = headRowIndex;
     }
 
 }

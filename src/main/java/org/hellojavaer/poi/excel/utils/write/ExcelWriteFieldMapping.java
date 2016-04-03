@@ -18,11 +18,10 @@ package org.hellojavaer.poi.excel.utils.write;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
+import org.springframework.util.Assert;
 
 /**
  * Config the mapping between excel column(by index) to Object field(by name).
@@ -31,63 +30,67 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelWriteFieldMapping implements Serializable {
 
-    private static final long                                         serialVersionUID = 1L;
+    private static final long                                          serialVersionUID = 1L;
 
-    private Map<String, Map<Integer, InnerWriteCellProcessorWrapper>> fieldMapping     = new LinkedHashMap<String, Map<Integer, InnerWriteCellProcessorWrapper>>();
+    private Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> fieldMapping     = new LinkedHashMap<String, Map<Integer, ExcelWriteFieldMappingAttribute>>();
 
-    public void put(int colIndex, String fieldName) {
-        put(colIndex, fieldName, null, null);
-    }
-
-    public void put(int colIndex, String fieldName, @SuppressWarnings("rawtypes")
-    ExcelWriteCellProcessor proccessor) {
-        put(colIndex, fieldName, null, proccessor);
-    }
-
-    public void put(int colIndex, String fieldName, ExcelWriteCellValueMapping valueMapping) {
-        put(colIndex, fieldName, valueMapping, null);
-    }
-
-    public void put(String colIndex, String fieldName) {
-        put(colIndex, fieldName, null, null);
-    }
-
-    public void put(String colIndex, String fieldName, ExcelWriteCellValueMapping valueMapping) {
-        put(colIndex, fieldName, valueMapping, null);
-    }
-
-    public void put(String colIndex, String fieldName, @SuppressWarnings("rawtypes")
-    ExcelWriteCellProcessor proccessor) {
-        put(colIndex, fieldName, null, proccessor);
-    }
-
-    private void put(int colIndex, String fieldName, ExcelWriteCellValueMapping valueMapping,
-                     @SuppressWarnings("rawtypes")
-                     ExcelWriteCellProcessor proccessor) {
-        Map<Integer, InnerWriteCellProcessorWrapper> map = fieldMapping.get(fieldName);
+    public ExcelWriteFieldMappingAttribute put(String colIndex, String fieldName) {
+        Assert.notNull(colIndex);
+        Assert.notNull(fieldName);
+        Map<Integer, ExcelWriteFieldMappingAttribute> map = fieldMapping.get(fieldName);
         if (map == null) {
             synchronized (fieldMapping) {
                 if (fieldMapping.get(colIndex) == null) {
-                    map = new ConcurrentHashMap<Integer, InnerWriteCellProcessorWrapper>();
+                    map = new ConcurrentHashMap<Integer, ExcelWriteFieldMappingAttribute>();
                     fieldMapping.put(fieldName, map);
                 }
             }
         }
-        map.put(colIndex, new InnerWriteCellProcessorWrapper(valueMapping, proccessor));
+        ExcelWriteFieldMappingAttribute attribute = new ExcelWriteFieldMappingAttribute();
+        map.put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), attribute);
+        return attribute;
     }
 
-    private void put(String colIndex, String fieldName, ExcelWriteCellValueMapping valueMapping,
-                     @SuppressWarnings("rawtypes")
-                     ExcelWriteCellProcessor proccessor) {
-        put(ExcelUtils.convertColCharIndexToIntIndex(colIndex), fieldName, valueMapping, proccessor);
+    public Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> export() {
+        return fieldMapping;
     }
 
-    public boolean isEmpty() {
-        return fieldMapping.isEmpty();
-    }
+    public class ExcelWriteFieldMappingAttribute implements Serializable {
 
-    public Set<Entry<String, Map<Integer, InnerWriteCellProcessorWrapper>>> entrySet() {
-        return fieldMapping.entrySet();
-    }
+        private static final long          serialVersionUID = 1L;
+        @SuppressWarnings("rawtypes")
+        private ExcelWriteCellProcessor    cellProcessor;
+        private ExcelWriteCellValueMapping valueMapping;
+        private String                     head;
 
+        @SuppressWarnings("rawtypes")
+        public ExcelWriteFieldMappingAttribute setCellProcessor(ExcelWriteCellProcessor cellProcessor) {
+            this.cellProcessor = cellProcessor;
+            return this;
+        }
+
+        public ExcelWriteFieldMappingAttribute setValueMapping(ExcelWriteCellValueMapping valueMapping) {
+            this.valueMapping = valueMapping;
+            return this;
+        }
+
+        public ExcelWriteFieldMappingAttribute setHead(String head) {
+            this.head = head;
+            return this;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public ExcelWriteCellProcessor getCellProcessor() {
+            return cellProcessor;
+        }
+
+        public ExcelWriteCellValueMapping getValueMapping() {
+            return valueMapping;
+        }
+
+        public String getHead() {
+            return head;
+        }
+
+    }
 }
