@@ -39,6 +39,9 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -994,7 +997,7 @@ public class ExcelUtils {
             Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
             for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> fieldValueMapping : map.entrySet()) {
                 Integer colIndex = fieldValueMapping.getKey();
-                ExcelWriteFieldMappingAttribute cellProcessorWrapper = fieldValueMapping.getValue();
+                ExcelWriteFieldMappingAttribute attribute = fieldValueMapping.getValue();
                 Object val = null;
                 if (rowData != null) {
                     val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
@@ -1014,8 +1017,8 @@ public class ExcelUtils {
                 context.setCurColIndex(colIndex);
                 context.setCurCell(cell);
 
-                ExcelWriteCellValueMapping valueMapping = cellProcessorWrapper.getValueMapping();
-                ExcelWriteCellProcessor processor = cellProcessorWrapper.getCellProcessor();
+                ExcelWriteCellValueMapping valueMapping = attribute.getValueMapping();
+                ExcelWriteCellProcessor processor = attribute.getCellProcessor();
                 if (valueMapping != null) {
                     String key = null;
                     if (val != null) {
@@ -1023,15 +1026,15 @@ public class ExcelUtils {
                     }
                     Object cval = valueMapping.get(key);
                     if (cval != null) {
-                        writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate);
+                        writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate, attribute, rowData);
                     } else {
                         if (!valueMapping.containsKey(key)) {
                             if (valueMapping.isSettedDefaultValue()) {
                                 if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
-                                    writeCell(row.getRowNum(), colIndex, cell, val, useTemplate);
+                                    writeCell(row.getRowNum(), colIndex, cell, val, useTemplate, attribute, rowData);
                                 } else {
                                     writeCell(row.getRowNum(), colIndex, cell, valueMapping.getDefaultValue(),
-                                              useTemplate);
+                                              useTemplate, attribute, rowData);
                                 }
                             } else if (valueMapping.getDefaultProcessor() != null) {
                                 valueMapping.getDefaultProcessor().process(context, rowData, cell);
@@ -1048,7 +1051,7 @@ public class ExcelUtils {
                         }
                     }
                 } else if (processor != null) {
-                    writeCell(cell, val, useTemplate);
+                    writeCell(cell, val, useTemplate, attribute, rowData);
                     try {
                         processor.process(context, val, cell);
                     } catch (RuntimeException e) {
@@ -1066,7 +1069,7 @@ public class ExcelUtils {
                         }
                     }
                 } else {
-                    writeCell(cell, val, useTemplate);
+                    writeCell(cell, val, useTemplate, attribute, rowData);
                 }
             }
         }
@@ -1098,9 +1101,10 @@ public class ExcelUtils {
         return val;
     }
 
-    private static void writeCell(int rowIndex, int colIndex, Cell cell, Object val, boolean userTemplate) {
+    private static void writeCell(int rowIndex, int colIndex, Cell cell, Object val, boolean userTemplate,
+                                  ExcelWriteFieldMappingAttribute attribute, Object bean) {
         try {
-            writeCell(cell, val, userTemplate);
+            writeCell(cell, val, userTemplate, attribute, bean);
         } catch (RuntimeException e) {
             ExcelWriteException ewe = new ExcelWriteException(e);
             ewe.setColIndex(colIndex);
@@ -1112,14 +1116,37 @@ public class ExcelUtils {
 
     public static void writeCell(Cell cell, Object val) {
         if (cell.getCellStyle() != null && cell.getCellStyle().getDataFormat() > 0) {
-            writeCell(cell, val, true);
+            writeCell(cell, val, true, null, null);
         } else {
-            writeCell(cell, val, false);
+            writeCell(cell, val, false, null, null);
         }
     }
 
     @SuppressWarnings("unused")
-    private static void writeCell(Cell cell, Object val, boolean userTemplate) {
+    private static void writeCell(Cell cell, Object val, boolean userTemplate,
+                                  ExcelWriteFieldMappingAttribute attribute, Object bean) {
+        if (attribute != null && attribute.getLink() != null) {
+            String addressFieldName = attribute.getLink();
+            String address = null;
+            if (bean != null) {
+                address = (String) getFieldValue(bean, addressFieldName, true);
+            }
+            Workbook wb = cell.getRow().getSheet().getWorkbook();
+
+            Hyperlink link = wb.getCreationHelper().createHyperlink(attribute.getLinkType());
+            link.setAddress(address);
+            cell.setHyperlink(link);
+            // Its style can't inherit from cell.
+            CellStyle style = wb.createCellStyle();
+            Font hlinkFont = wb.createFont();
+            hlinkFont.setUnderline(Font.U_SINGLE);
+            hlinkFont.setColor(IndexedColors.BLUE.getIndex());
+            style.setFont(hlinkFont);
+            if (cell.getCellStyle() != null) {
+                style.setFillBackgroundColor(cell.getCellStyle().getFillBackgroundColor());
+            }
+            cell.setCellStyle(style);
+        }
         if (val == null) {
             cell.setCellValue((String) null);
             return;
