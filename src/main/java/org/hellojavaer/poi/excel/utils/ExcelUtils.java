@@ -373,49 +373,65 @@ public class ExcelUtils {
 
             Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
             for (Map.Entry<String, ExcelReadFieldMappingAttribute> fieldEntry : fields.entrySet()) {
+                ExcelReadFieldMappingAttribute attribute = fieldEntry.getValue();
                 String fieldName = fieldEntry.getKey();
-                ExcelReadFieldMappingAttribute entry = fieldEntry.getValue();
                 Object value = _readCell(cell);
-                if (value != null && value instanceof String && isTrimSpace) {
-                    value = ((String) value).trim();
-                    if (((String) value).length() == 0) {
-                        value = null;
+                setProperty(context, row, targetClass, isTrimSpace, curRowIndex, curColIndex, cell, fieldName,
+                            attribute, value);
+                if (attribute.getLinkField() != null) {
+                    String address = null;
+                    Hyperlink hyperlink = cell.getHyperlink();
+                    if (hyperlink != null) {
+                        address = hyperlink.getAddress();
                     }
-                }
-                if (value == null && entry.isRequired()) {
-                    ExcelReadException e = new ExcelReadException("Cell value is null");
-                    e.setRowIndex(curRowIndex);
-                    e.setColIndex(curColIndex);
-                    e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
-                    throw e;
-                }
-                //
-                try {
-                    if (Map.class.isAssignableFrom(targetClass)) {// map
-                        value = procValueConvert(context, row, cell, entry, fieldName, value);
-                        ((Map) context.getCurRowData()).put(fieldName, value);
-                    } else {// java bean
-                        PropertyDescriptor pd = getPropertyDescriptor(targetClass, fieldName);
-                        if (pd == null || pd.getWriteMethod() == null) {
-                            continue;
-                        }
-                        value = procValueConvert(context, row, cell, entry, fieldName, value);
-                        Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
-                        if (value != null && !paramType.isAssignableFrom(value.getClass())) {
-                            value = TypeUtils.cast(value, paramType, null);
-                        }
-                        pd.getWriteMethod().invoke(context.getCurRowData(), value);
-                    }
-                } catch (Exception e1) {
-                    ExcelReadException e = new ExcelReadException(e1);
-                    e.setRowIndex(curRowIndex);
-                    e.setColIndex(curColIndex);
-                    e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                    throw e;
+                    setProperty(context, row, targetClass, isTrimSpace, curRowIndex, curColIndex, cell,
+                                attribute.getLinkField(), attribute, address);
                 }
             }
         }
         return context.getCurRowData();
+    }
+
+    private static <T> void setProperty(ExcelReadContext<T> context, Row row, Class<T> targetClass,
+                                        boolean isTrimSpace, int curRowIndex, int curColIndex, Cell cell,
+                                        String fieldName, ExcelReadFieldMappingAttribute attribute, Object value) {
+        if (value != null && value instanceof String && isTrimSpace) {
+            value = ((String) value).trim();
+            if (((String) value).length() == 0) {
+                value = null;
+            }
+        }
+        if (value == null && attribute.isRequired()) {
+            ExcelReadException e = new ExcelReadException("Cell value is null");
+            e.setRowIndex(curRowIndex);
+            e.setColIndex(curColIndex);
+            e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
+            throw e;
+        }
+        //
+        try {
+            if (Map.class.isAssignableFrom(targetClass)) {// map
+                value = procValueConvert(context, row, cell, attribute, fieldName, value);
+                ((Map) context.getCurRowData()).put(fieldName, value);
+            } else {// java bean
+                PropertyDescriptor pd = getPropertyDescriptor(targetClass, fieldName);
+                if (pd == null || pd.getWriteMethod() == null) {
+                    return;
+                }
+                value = procValueConvert(context, row, cell, attribute, fieldName, value);
+                Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
+                if (value != null && !paramType.isAssignableFrom(value.getClass())) {
+                    value = TypeUtils.cast(value, paramType, null);
+                }
+                pd.getWriteMethod().invoke(context.getCurRowData(), value);
+            }
+        } catch (Exception e1) {
+            ExcelReadException e = new ExcelReadException(e1);
+            e.setRowIndex(curRowIndex);
+            e.setColIndex(curColIndex);
+            e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+            throw e;
+        }
     }
 
     /**
