@@ -380,7 +380,7 @@ public class ExcelUtils {
                     }
                 }
                 if (value == null && entry.isRequired()) {
-                    ExcelReadException e = new ExcelReadException();
+                    ExcelReadException e = new ExcelReadException("Cell value is null");
                     e.setRowIndex(curRowIndex);
                     e.setColIndex(curColIndex);
                     e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
@@ -442,7 +442,7 @@ public class ExcelUtils {
                 break;
             case Cell.CELL_TYPE_ERROR:
                 // cell.getErrorCellValue();
-                ExcelReadException e = new ExcelReadException();
+                ExcelReadException e = new ExcelReadException("Cell type error");
                 e.setRowIndex(cell.getRowIndex());
                 e.setColIndex(cell.getColumnIndex());
                 e.setCode(ExcelReadException.CODE_OF_CELL_ERROR);
@@ -511,7 +511,7 @@ public class ExcelUtils {
                             convertedValue = value;
                         }
                     } else {
-                        ExcelReadException e = new ExcelReadException();
+                        ExcelReadException e = new ExcelReadException("Cell value is value " + strValue);
                         e.setRowIndex(row.getRowNum());
                         e.setColIndex(cell.getColumnIndex());
                         e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED);
@@ -541,7 +541,7 @@ public class ExcelUtils {
             }
         }
         if (convertedValue == null && entry.isRequired()) {
-            ExcelReadException e = new ExcelReadException();
+            ExcelReadException e = new ExcelReadException("Cell value is null");
             e.setRowIndex(row.getRowNum());
             e.setColIndex(cell.getColumnIndex());
             e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
@@ -1036,7 +1036,7 @@ public class ExcelUtils {
                             } else if (valueMapping.getDefaultProcessor() != null) {
                                 valueMapping.getDefaultProcessor().process(context, rowData, cell);
                             } else {
-                                ExcelWriteException ex = new ExcelWriteException();
+                                ExcelWriteException ex = new ExcelWriteException("Field value is " + key);
                                 ex.setCode(ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED);
                                 ex.setColIndex(colIndex);
                                 ex.setRowIndex(row.getRowNum());
