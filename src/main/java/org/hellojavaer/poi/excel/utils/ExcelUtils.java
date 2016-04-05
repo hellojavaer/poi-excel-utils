@@ -1125,8 +1125,8 @@ public class ExcelUtils {
     @SuppressWarnings("unused")
     private static void writeCell(Cell cell, Object val, boolean userTemplate,
                                   ExcelWriteFieldMappingAttribute attribute, Object bean) {
-        if (attribute != null && attribute.getLink() != null) {
-            String addressFieldName = attribute.getLink();
+        if (attribute != null && attribute.getLinkField() != null) {
+            String addressFieldName = attribute.getLinkField();
             String address = null;
             if (bean != null) {
                 address = (String) getFieldValue(bean, addressFieldName, true);

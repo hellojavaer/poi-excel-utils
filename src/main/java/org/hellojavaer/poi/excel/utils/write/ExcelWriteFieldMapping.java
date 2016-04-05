@@ -63,7 +63,7 @@ public class ExcelWriteFieldMapping implements Serializable {
         private ExcelWriteCellProcessor    cellProcessor;
         private ExcelWriteCellValueMapping valueMapping;
         private String                     head;
-        private String                     link;
+        private String                     linkField;
         private int                        linkType;
 
         @SuppressWarnings("rawtypes")
@@ -82,14 +82,14 @@ public class ExcelWriteFieldMapping implements Serializable {
             return this;
         }
 
-        public ExcelWriteFieldMappingAttribute setLink(String linkFieldName) {
-            this.link = linkFieldName;
+        public ExcelWriteFieldMappingAttribute setLinkField(String linkField) {
+            this.linkField = linkField;
             this.linkType = Hyperlink.LINK_URL;
             return this;
         }
 
         public ExcelWriteFieldMappingAttribute setLink(String linkFieldName, int linkType) {
-            this.link = linkFieldName;
+            this.linkField = linkFieldName;
             this.linkType = Hyperlink.LINK_URL;
             return this;
         }
@@ -107,8 +107,8 @@ public class ExcelWriteFieldMapping implements Serializable {
             return head;
         }
 
-        public String getLink() {
-            return link;
+        public String getLinkField() {
+            return linkField;
         }
 
         public int getLinkType() {
