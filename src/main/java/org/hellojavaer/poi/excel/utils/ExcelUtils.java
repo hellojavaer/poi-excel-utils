@@ -386,11 +386,11 @@ public class ExcelUtils {
                             address = hyperlink.getAddress();
                         }
                     }
-                    if (address != null) {
+                    if (isTrimSpace && address != null) {
                         address = address.trim();
-                    }
-                    if (address.length() == 0) {
-                        address = null;
+                        if (address.length() == 0) {
+                            address = null;
+                        }
                     }
                     if (Map.class.isAssignableFrom(targetClass)) {// map
                         ((Map) context.getCurRowData()).put(linkField, address);
