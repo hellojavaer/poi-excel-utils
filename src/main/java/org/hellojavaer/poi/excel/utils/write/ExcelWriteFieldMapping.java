@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.poi.common.usermodel.Hyperlink;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.springframework.util.Assert;
 
@@ -62,6 +63,8 @@ public class ExcelWriteFieldMapping implements Serializable {
         private ExcelWriteCellProcessor    cellProcessor;
         private ExcelWriteCellValueMapping valueMapping;
         private String                     head;
+        private String                     linkField;
+        private int                        linkType;
 
         @SuppressWarnings("rawtypes")
         public ExcelWriteFieldMappingAttribute setCellProcessor(ExcelWriteCellProcessor cellProcessor) {
@@ -79,6 +82,18 @@ public class ExcelWriteFieldMapping implements Serializable {
             return this;
         }
 
+        public ExcelWriteFieldMappingAttribute setLinkField(String linkField) {
+            this.linkField = linkField;
+            this.linkType = Hyperlink.LINK_URL;
+            return this;
+        }
+
+        public ExcelWriteFieldMappingAttribute setLink(String linkFieldName, int linkType) {
+            this.linkField = linkFieldName;
+            this.linkType = Hyperlink.LINK_URL;
+            return this;
+        }
+
         @SuppressWarnings("rawtypes")
         public ExcelWriteCellProcessor getCellProcessor() {
             return cellProcessor;
@@ -90,6 +105,14 @@ public class ExcelWriteFieldMapping implements Serializable {
 
         public String getHead() {
             return head;
+        }
+
+        public String getLinkField() {
+            return linkField;
+        }
+
+        public int getLinkType() {
+            return linkType;
         }
 
     }

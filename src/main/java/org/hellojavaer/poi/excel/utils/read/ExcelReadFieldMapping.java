@@ -59,6 +59,7 @@ public class ExcelReadFieldMapping implements Serializable {
         private boolean                   required         = false;
         private ExcelReadCellProcessor    cellProcessor;
         private ExcelReadCellValueMapping valueMapping;
+        private String                    linkField;
 
         public ExcelReadFieldMappingAttribute setRequired(boolean required) {
             this.required = required;
@@ -75,6 +76,11 @@ public class ExcelReadFieldMapping implements Serializable {
             return this;
         }
 
+        public ExcelReadFieldMappingAttribute setLinkField(String linkField) {
+            this.linkField = linkField;
+            return this;
+        }
+
         public boolean isRequired() {
             return required;
         }
@@ -85,6 +91,10 @@ public class ExcelReadFieldMapping implements Serializable {
 
         public ExcelReadCellValueMapping getValueMapping() {
             return valueMapping;
+        }
+
+        public String getLinkField() {
+            return linkField;
         }
 
     }

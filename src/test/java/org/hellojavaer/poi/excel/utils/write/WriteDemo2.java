@@ -49,14 +49,6 @@ public class WriteDemo2 {
             }
 
             @Override
-            public List<TestBean> getDataList(ExcelWriteContext<TestBean> context) {
-                int pageSize = 10;
-                List<TestBean> list = pageQuery(rowIndex.longValue(), pageSize);
-                rowIndex.getAndAdd(pageSize);
-                return list;
-            }
-
-            @Override
             public void onException(ExcelWriteContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelWriteException) {
                     ExcelWriteException ewe = (ExcelWriteException) e;
@@ -117,26 +109,12 @@ public class WriteDemo2 {
         // Row row) {
         // }
         // });
+        sheetProcessor.setDataList(getDataList());
 
         ExcelUtils.write(excelTemplate, output, sheetProcessor);
     }
 
-    private static List<TestBean> pageQuery(long rowIndex, int pageSize) {
-        if (testDataCache == null) {
-            testDataCache = getInputData();
-        }
-        if (rowIndex >= testDataCache.size()) {
-            return null;
-        } else {
-            int endIndex = (int) (rowIndex + pageSize);
-            if (endIndex > testDataCache.size()) {
-                endIndex = testDataCache.size();
-            }
-            return testDataCache.subList((int) rowIndex, endIndex);
-        }
-    }
-
-    private static List<TestBean> getInputData() {
+    private static List<TestBean> getDataList() {
         final List<TestBean> re = new ArrayList<TestBean>();
         InputStream in = WriteDemo2.class.getResourceAsStream("/excel/xlsx/data_file2.xlsx");
         ExcelReadSheetProcessor<TestBean> sheetProcessor = new ExcelReadSheetProcessor<TestBean>() {

@@ -61,7 +61,7 @@ public class ReadDemo1 {
             }
         };
         ExcelReadFieldMapping fieldMapping = new ExcelReadFieldMapping();
-        fieldMapping.put("A", "byteField").setRequired(true);
+        fieldMapping.put("A", "byteField").setRequired(true).setLinkField("url");
         fieldMapping.put("B", "shortField");
         fieldMapping.put("C", "intField");
         fieldMapping.put("D", "longField");

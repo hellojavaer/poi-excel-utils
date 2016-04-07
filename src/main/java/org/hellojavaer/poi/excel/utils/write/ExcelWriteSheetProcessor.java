@@ -26,8 +26,6 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public abstract void beforeProcess(ExcelWriteContext<T> context);
 
-    public abstract List<T> getDataList(ExcelWriteContext<T> context);
-
     public abstract void onException(ExcelWriteContext<T> context, RuntimeException e);
 
     public abstract void afterProcess(ExcelWriteContext<T> context);
@@ -41,6 +39,8 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private ExcelWriteRowProcessor<T> rowProcessor;
     private boolean                   trimSpace     = false;
     private Integer                   headRowIndex;
+    private List<T>                   dataList;
+    private Integer                   theme;
 
     public Integer getSheetIndex() {
         return sheetIndex;
@@ -110,6 +110,22 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public void setHeadRowIndex(Integer headRowIndex) {
         this.headRowIndex = headRowIndex;
+    }
+
+    public List<T> getDataList() {
+        return dataList;
+    }
+
+    public void setDataList(List<T> dataList) {
+        this.dataList = dataList;
+    }
+
+    public Integer getTheme() {
+        return theme;
+    }
+
+    public void setTheme(Integer theme) {
+        this.theme = theme;
     }
 
 }

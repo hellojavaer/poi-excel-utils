@@ -19,6 +19,7 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -39,6 +40,9 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -61,6 +65,7 @@ import org.hellojavaer.poi.excel.utils.write.ExcelWriteException;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteSheetProcessor;
+import org.hellojavaer.poi.excel.utils.write.ExcelWriteTheme;
 import org.springframework.beans.BeanUtils;
 
 import com.alibaba.fastjson.util.TypeUtils;
@@ -371,7 +376,38 @@ public class ExcelUtils {
             Map<String, ExcelReadFieldMappingAttribute> fields = fieldMappingEntry.getValue();
             for (Map.Entry<String, ExcelReadFieldMappingAttribute> fieldEntry : fields.entrySet()) {
                 String fieldName = fieldEntry.getKey();
-                ExcelReadFieldMappingAttribute entry = fieldEntry.getValue();
+                ExcelReadFieldMappingAttribute attribute = fieldEntry.getValue();
+                // proccess link
+                String linkField = attribute.getLinkField();
+                if (linkField != null) {
+                    String address = null;
+                    if (cell != null) {
+                        Hyperlink hyperlink = cell.getHyperlink();
+                        if (hyperlink != null) {
+                            address = hyperlink.getAddress();
+                        }
+                    }
+                    if (isTrimSpace && address != null) {
+                        address = address.trim();
+                        if (address.length() == 0) {
+                            address = null;
+                        }
+                    }
+                    if (Map.class.isAssignableFrom(targetClass)) {// map
+                        ((Map) context.getCurRowData()).put(linkField, address);
+                    } else {// java bean
+                        try {
+                            setProperty(context.getCurRowData(), linkField, address);
+                        } catch (Exception e1) {
+                            ExcelReadException e = new ExcelReadException(e1);
+                            e.setRowIndex(curRowIndex);
+                            e.setColIndex(curColIndex);
+                            e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                            throw e;
+                        }
+                    }
+                }
+
                 Object value = _readCell(cell);
                 if (value != null && value instanceof String && isTrimSpace) {
                     value = ((String) value).trim();
@@ -379,8 +415,8 @@ public class ExcelUtils {
                         value = null;
                     }
                 }
-                if (value == null && entry.isRequired()) {
-                    ExcelReadException e = new ExcelReadException();
+                if (value == null && attribute.isRequired()) {
+                    ExcelReadException e = new ExcelReadException("Cell value is null");
                     e.setRowIndex(curRowIndex);
                     e.setColIndex(curColIndex);
                     e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
@@ -389,19 +425,11 @@ public class ExcelUtils {
                 //
                 try {
                     if (Map.class.isAssignableFrom(targetClass)) {// map
-                        value = procValueConvert(context, row, cell, entry, fieldName, value);
+                        value = procValueConvert(context, row, cell, attribute, fieldName, value);
                         ((Map) context.getCurRowData()).put(fieldName, value);
                     } else {// java bean
-                        PropertyDescriptor pd = getPropertyDescriptor(targetClass, fieldName);
-                        if (pd == null || pd.getWriteMethod() == null) {
-                            continue;
-                        }
-                        value = procValueConvert(context, row, cell, entry, fieldName, value);
-                        Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
-                        if (value != null && !paramType.isAssignableFrom(value.getClass())) {
-                            value = TypeUtils.cast(value, paramType, null);
-                        }
-                        pd.getWriteMethod().invoke(context.getCurRowData(), value);
+                        value = procValueConvert(context, row, cell, attribute, fieldName, value);
+                        setProperty(context.getCurRowData(), fieldName, value);
                     }
                 } catch (Exception e1) {
                     ExcelReadException e = new ExcelReadException(e1);
@@ -442,7 +470,7 @@ public class ExcelUtils {
                 break;
             case Cell.CELL_TYPE_ERROR:
                 // cell.getErrorCellValue();
-                ExcelReadException e = new ExcelReadException();
+                ExcelReadException e = new ExcelReadException("Cell type error");
                 e.setRowIndex(cell.getRowIndex());
                 e.setColIndex(cell.getColumnIndex());
                 e.setCode(ExcelReadException.CODE_OF_CELL_ERROR);
@@ -511,7 +539,7 @@ public class ExcelUtils {
                             convertedValue = value;
                         }
                     } else {
-                        ExcelReadException e = new ExcelReadException();
+                        ExcelReadException e = new ExcelReadException("Cell value is value " + strValue);
                         e.setRowIndex(row.getRowNum());
                         e.setColIndex(cell.getColumnIndex());
                         e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED);
@@ -541,7 +569,7 @@ public class ExcelUtils {
             }
         }
         if (convertedValue == null && entry.isRequired()) {
-            ExcelReadException e = new ExcelReadException();
+            ExcelReadException e = new ExcelReadException("Cell value is null");
             e.setRowIndex(row.getRowNum());
             e.setColIndex(cell.getColumnIndex());
             e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED);
@@ -666,25 +694,53 @@ public class ExcelUtils {
     }
 
     @SuppressWarnings("rawtypes")
-    private static void writeHead(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
+    private static void writeHead(boolean useTemplate, Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
         Integer headRowIndex = sheetProcessor.getHeadRowIndex();
-        if (headRowIndex != null) {
-            Row row = sheet.getRow(headRowIndex);
-            if (row == null) {
-                row = sheet.createRow(headRowIndex);
+        if (headRowIndex == null) {
+            return;
+        }
+        Workbook wookbook = sheet.getWorkbook();
+        // use theme
+        CellStyle style = null;
+        if (!useTemplate && sheetProcessor.getTheme() != null) {
+            int theme = sheetProcessor.getTheme();
+            if (theme == ExcelWriteTheme.BASE) {
+                style = wookbook.createCellStyle();
+                style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+                style.setFillForegroundColor((short) 44);
+                style.setBorderBottom(CellStyle.BORDER_THIN);
+                style.setBorderLeft(CellStyle.BORDER_THIN);
+                style.setBorderRight(CellStyle.BORDER_THIN);
+                style.setBorderTop(CellStyle.BORDER_THIN);
+                // style.setBottomBorderColor((short) 44);
+                style.setAlignment(CellStyle.ALIGN_CENTER);
             }
-            for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : sheetProcessor.getFieldMapping().export().entrySet()) {
-                Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
-                if (map != null) {
-                    for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> entry2 : map.entrySet()) {
-                        String head = entry2.getValue().getHead();
-                        Integer colIndex = entry2.getKey();
-                        Cell cell = row.getCell(colIndex);
-                        if (cell == null) {
-                            cell = row.createCell(colIndex);
-                        }
-                        cell.setCellValue(head);
+            // freeze Pane
+            if (sheetProcessor.getHeadRowIndex() != null && sheetProcessor.getHeadRowIndex() == 0) {
+                sheet.createFreezePane(0, 1, 0, 1);
+            }
+        }
+
+        Row row = sheet.getRow(headRowIndex);
+        if (row == null) {
+            row = sheet.createRow(headRowIndex);
+        }
+        for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : sheetProcessor.getFieldMapping().export().entrySet()) {
+            Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
+            if (map != null) {
+                for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> entry2 : map.entrySet()) {
+                    String head = entry2.getValue().getHead();
+                    Integer colIndex = entry2.getKey();
+                    Cell cell = row.getCell(colIndex);
+                    if (cell == null) {
+                        cell = row.createCell(colIndex);
                     }
+                    // use theme
+                    if (!useTemplate && sheetProcessor.getTheme() != null) {
+                        cell.setCellStyle(style);
+
+                    }
+                    cell.setCellValue(head);
                 }
             }
         }
@@ -766,8 +822,6 @@ public class ExcelUtils {
                 if (sheetName == null) {
                     sheetName = sheet.getSheetName();
                 }
-                // write head
-                writeHead(sheet, sheetProcessor);
 
                 // proc sheet
                 context.setCurSheet(sheet);
@@ -779,16 +833,16 @@ public class ExcelUtils {
                 context.setCurColIndex(null);
                 // beforeProcess
                 sheetProcessor.beforeProcess(context);
-
+                // write head
+                writeHead(useTemplate, sheet, sheetProcessor);
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getStartRowIndex();
                 boolean isBreak = false;
                 Map<Integer, InnerRow> cacheForTemplateRow = new HashMap<Integer, InnerRow>();
-                for (@SuppressWarnings("rawtypes")
-                List dataList = sheetProcessor.getDataList(context); //
-                dataList != null && !dataList.isEmpty(); //
-                dataList = sheetProcessor.getDataList(context)) {
+
+                List<?> dataList = sheetProcessor.getDataList(); //
+                if (dataList != null && !dataList.isEmpty()) {
                     for (Object rowData : dataList) {
                         // proc row
                         Row row = sheet.getRow(writeRowIndex);
@@ -842,6 +896,7 @@ public class ExcelUtils {
                 if (sheetProcessor.getTemplateStartRowIndex() != null
                     && sheetProcessor.getTemplateEndRowIndex() != null) {
                     writeDataValidations(sheet, sheetProcessor);
+                    writeStyleAfterFinish(useTemplate, sheet, sheetProcessor);
                 }
             } catch (RuntimeException e) {
                 sheetProcessor.onException(context, e);
@@ -891,6 +946,27 @@ public class ExcelUtils {
         }
         cache.put(rowIndex, templateRow);
         return templateRow;
+    }
+
+    private static void writeStyleAfterFinish(boolean useTemplate, Sheet sheet,
+                                              ExcelWriteSheetProcessor<?> sheetProcessor) {
+        if (useTemplate) {
+            return;
+        }
+        ExcelWriteFieldMapping excelWriteFieldMapping = sheetProcessor.getFieldMapping();
+        if (excelWriteFieldMapping == null) {
+            return;
+        }
+        Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> mme = excelWriteFieldMapping.export();
+        if (mme == null) {
+            return;
+        }
+        for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : mme.entrySet()) {
+            Map<Integer, ExcelWriteFieldMappingAttribute> me = entry.getValue();
+            for (Integer column : me.keySet()) {
+                sheet.autoSizeColumn(column);
+            }
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -994,7 +1070,7 @@ public class ExcelUtils {
             Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
             for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> fieldValueMapping : map.entrySet()) {
                 Integer colIndex = fieldValueMapping.getKey();
-                ExcelWriteFieldMappingAttribute cellProcessorWrapper = fieldValueMapping.getValue();
+                ExcelWriteFieldMappingAttribute attribute = fieldValueMapping.getValue();
                 Object val = null;
                 if (rowData != null) {
                     val = getFieldValue(rowData, fieldName, sheetProcessor.isTrimSpace());
@@ -1014,8 +1090,8 @@ public class ExcelUtils {
                 context.setCurColIndex(colIndex);
                 context.setCurCell(cell);
 
-                ExcelWriteCellValueMapping valueMapping = cellProcessorWrapper.getValueMapping();
-                ExcelWriteCellProcessor processor = cellProcessorWrapper.getCellProcessor();
+                ExcelWriteCellValueMapping valueMapping = attribute.getValueMapping();
+                ExcelWriteCellProcessor processor = attribute.getCellProcessor();
                 if (valueMapping != null) {
                     String key = null;
                     if (val != null) {
@@ -1023,20 +1099,20 @@ public class ExcelUtils {
                     }
                     Object cval = valueMapping.get(key);
                     if (cval != null) {
-                        writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate);
+                        writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate, attribute, rowData);
                     } else {
                         if (!valueMapping.containsKey(key)) {
                             if (valueMapping.isSettedDefaultValue()) {
                                 if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
-                                    writeCell(row.getRowNum(), colIndex, cell, val, useTemplate);
+                                    writeCell(row.getRowNum(), colIndex, cell, val, useTemplate, attribute, rowData);
                                 } else {
                                     writeCell(row.getRowNum(), colIndex, cell, valueMapping.getDefaultValue(),
-                                              useTemplate);
+                                              useTemplate, attribute, rowData);
                                 }
                             } else if (valueMapping.getDefaultProcessor() != null) {
                                 valueMapping.getDefaultProcessor().process(context, rowData, cell);
                             } else {
-                                ExcelWriteException ex = new ExcelWriteException();
+                                ExcelWriteException ex = new ExcelWriteException("Field value is " + key);
                                 ex.setCode(ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED);
                                 ex.setColIndex(colIndex);
                                 ex.setRowIndex(row.getRowNum());
@@ -1048,7 +1124,7 @@ public class ExcelUtils {
                         }
                     }
                 } else if (processor != null) {
-                    writeCell(cell, val, useTemplate);
+                    writeCell(cell, val, useTemplate, attribute, rowData);
                     try {
                         processor.process(context, val, cell);
                     } catch (RuntimeException e) {
@@ -1066,7 +1142,7 @@ public class ExcelUtils {
                         }
                     }
                 } else {
-                    writeCell(cell, val, useTemplate);
+                    writeCell(cell, val, useTemplate, attribute, rowData);
                 }
             }
         }
@@ -1078,15 +1154,7 @@ public class ExcelUtils {
         if (obj instanceof Map) {
             val = ((Map) obj).get(fieldName);
         } else {// java bean
-            PropertyDescriptor pd = getPropertyDescriptor(obj.getClass(), fieldName);
-            if (pd.getReadMethod() == null) {
-                throw new IllegalStateException("not found getter method for filed:" + fieldName);
-            }
-            try {
-                val = pd.getReadMethod().invoke(obj, (Object[]) null);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            val = getProperty(obj, fieldName);
         }
         // trim
         if (val != null && val instanceof String && isTrimSpace) {
@@ -1098,9 +1166,10 @@ public class ExcelUtils {
         return val;
     }
 
-    private static void writeCell(int rowIndex, int colIndex, Cell cell, Object val, boolean userTemplate) {
+    private static void writeCell(int rowIndex, int colIndex, Cell cell, Object val, boolean userTemplate,
+                                  ExcelWriteFieldMappingAttribute attribute, Object bean) {
         try {
-            writeCell(cell, val, userTemplate);
+            writeCell(cell, val, userTemplate, attribute, bean);
         } catch (RuntimeException e) {
             ExcelWriteException ewe = new ExcelWriteException(e);
             ewe.setColIndex(colIndex);
@@ -1112,14 +1181,37 @@ public class ExcelUtils {
 
     public static void writeCell(Cell cell, Object val) {
         if (cell.getCellStyle() != null && cell.getCellStyle().getDataFormat() > 0) {
-            writeCell(cell, val, true);
+            writeCell(cell, val, true, null, null);
         } else {
-            writeCell(cell, val, false);
+            writeCell(cell, val, false, null, null);
         }
     }
 
     @SuppressWarnings("unused")
-    private static void writeCell(Cell cell, Object val, boolean userTemplate) {
+    private static void writeCell(Cell cell, Object val, boolean userTemplate,
+                                  ExcelWriteFieldMappingAttribute attribute, Object bean) {
+        if (attribute != null && attribute.getLinkField() != null) {
+            String addressFieldName = attribute.getLinkField();
+            String address = null;
+            if (bean != null) {
+                address = (String) getFieldValue(bean, addressFieldName, true);
+            }
+            Workbook wb = cell.getRow().getSheet().getWorkbook();
+
+            Hyperlink link = wb.getCreationHelper().createHyperlink(attribute.getLinkType());
+            link.setAddress(address);
+            cell.setHyperlink(link);
+            // Its style can't inherit from cell.
+            CellStyle style = wb.createCellStyle();
+            Font hlinkFont = wb.createFont();
+            hlinkFont.setUnderline(Font.U_SINGLE);
+            hlinkFont.setColor(IndexedColors.BLUE.getIndex());
+            style.setFont(hlinkFont);
+            if (cell.getCellStyle() != null) {
+                style.setFillBackgroundColor(cell.getCellStyle().getFillBackgroundColor());
+            }
+            cell.setCellStyle(style);
+        }
         if (val == null) {
             cell.setCellValue((String) null);
             return;
@@ -1273,6 +1365,34 @@ public class ExcelUtils {
             index = index / 26 - 1;
         } while (index >= 0);
         return sb.toString();
+    }
+
+    private static Object getProperty(Object obj, String fieldName) {
+        PropertyDescriptor pd = getPropertyDescriptor(obj.getClass(), fieldName);
+        if (pd == null || pd.getReadMethod() == null) {
+            throw new IllegalStateException("In class" + obj.getClass() + ", no getter method found for field '"
+                                            + fieldName + "'");
+        }
+        try {
+            return pd.getReadMethod().invoke(obj, (Object[]) null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void setProperty(Object obj, String fieldName, Object value) throws IllegalAccessException,
+                                                                               IllegalArgumentException,
+                                                                               InvocationTargetException {
+        PropertyDescriptor pd = getPropertyDescriptor(obj.getClass(), fieldName);
+        if (pd == null || pd.getWriteMethod() == null) {
+            throw new IllegalStateException("In class" + obj.getClass() + "no setter method found for field '"
+                                            + fieldName + "'");
+        }
+        Class<?> paramType = pd.getWriteMethod().getParameterTypes()[0];
+        if (value != null && !paramType.isAssignableFrom(value.getClass())) {
+            value = TypeUtils.cast(value, paramType, null);
+        }
+        pd.getWriteMethod().invoke(obj, value);
     }
 
     private static PropertyDescriptor getPropertyDescriptor(Class<?> clazz, String propertyName) {
