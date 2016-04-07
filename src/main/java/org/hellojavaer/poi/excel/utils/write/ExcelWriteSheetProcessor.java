@@ -40,6 +40,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
     private boolean                   trimSpace     = false;
     private Integer                   headRowIndex;
     private List<T>                   dataList;
+    private Integer                   theme;
 
     public Integer getSheetIndex() {
         return sheetIndex;
@@ -117,6 +118,14 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public void setDataList(List<T> dataList) {
         this.dataList = dataList;
+    }
+
+    public Integer getTheme() {
+        return theme;
+    }
+
+    public void setTheme(Integer theme) {
+        this.theme = theme;
     }
 
 }

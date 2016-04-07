@@ -65,6 +65,7 @@ import org.hellojavaer.poi.excel.utils.write.ExcelWriteException;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteSheetProcessor;
+import org.hellojavaer.poi.excel.utils.write.ExcelWriteTheme;
 import org.springframework.beans.BeanUtils;
 
 import com.alibaba.fastjson.util.TypeUtils;
@@ -693,25 +694,53 @@ public class ExcelUtils {
     }
 
     @SuppressWarnings("rawtypes")
-    private static void writeHead(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
+    private static void writeHead(boolean useTemplate, Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
         Integer headRowIndex = sheetProcessor.getHeadRowIndex();
-        if (headRowIndex != null) {
-            Row row = sheet.getRow(headRowIndex);
-            if (row == null) {
-                row = sheet.createRow(headRowIndex);
+        if (headRowIndex == null) {
+            return;
+        }
+        Workbook wookbook = sheet.getWorkbook();
+        // use theme
+        CellStyle style = null;
+        if (!useTemplate && sheetProcessor.getTheme() != null) {
+            int theme = sheetProcessor.getTheme();
+            if (theme == ExcelWriteTheme.BASE) {
+                style = wookbook.createCellStyle();
+                style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+                style.setFillForegroundColor((short) 44);
+                style.setBorderBottom(CellStyle.BORDER_THIN);
+                style.setBorderLeft(CellStyle.BORDER_THIN);
+                style.setBorderRight(CellStyle.BORDER_THIN);
+                style.setBorderTop(CellStyle.BORDER_THIN);
+                // style.setBottomBorderColor((short) 44);
+                style.setAlignment(CellStyle.ALIGN_CENTER);
             }
-            for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : sheetProcessor.getFieldMapping().export().entrySet()) {
-                Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
-                if (map != null) {
-                    for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> entry2 : map.entrySet()) {
-                        String head = entry2.getValue().getHead();
-                        Integer colIndex = entry2.getKey();
-                        Cell cell = row.getCell(colIndex);
-                        if (cell == null) {
-                            cell = row.createCell(colIndex);
-                        }
-                        cell.setCellValue(head);
+            // freeze Pane
+            if (sheetProcessor.getHeadRowIndex() != null && sheetProcessor.getHeadRowIndex() == 0) {
+                sheet.createFreezePane(0, 1, 0, 1);
+            }
+        }
+
+        Row row = sheet.getRow(headRowIndex);
+        if (row == null) {
+            row = sheet.createRow(headRowIndex);
+        }
+        for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : sheetProcessor.getFieldMapping().export().entrySet()) {
+            Map<Integer, ExcelWriteFieldMappingAttribute> map = entry.getValue();
+            if (map != null) {
+                for (Map.Entry<Integer, ExcelWriteFieldMappingAttribute> entry2 : map.entrySet()) {
+                    String head = entry2.getValue().getHead();
+                    Integer colIndex = entry2.getKey();
+                    Cell cell = row.getCell(colIndex);
+                    if (cell == null) {
+                        cell = row.createCell(colIndex);
                     }
+                    // use theme
+                    if (!useTemplate && sheetProcessor.getTheme() != null) {
+                        cell.setCellStyle(style);
+
+                    }
+                    cell.setCellValue(head);
                 }
             }
         }
@@ -805,7 +834,7 @@ public class ExcelUtils {
                 // beforeProcess
                 sheetProcessor.beforeProcess(context);
                 // write head
-                writeHead(sheet, sheetProcessor);
+                writeHead(useTemplate, sheet, sheetProcessor);
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getStartRowIndex();
@@ -867,6 +896,7 @@ public class ExcelUtils {
                 if (sheetProcessor.getTemplateStartRowIndex() != null
                     && sheetProcessor.getTemplateEndRowIndex() != null) {
                     writeDataValidations(sheet, sheetProcessor);
+                    writeStyleAfterFinish(useTemplate, sheet, sheetProcessor);
                 }
             } catch (RuntimeException e) {
                 sheetProcessor.onException(context, e);
@@ -916,6 +946,27 @@ public class ExcelUtils {
         }
         cache.put(rowIndex, templateRow);
         return templateRow;
+    }
+
+    private static void writeStyleAfterFinish(boolean useTemplate, Sheet sheet,
+                                              ExcelWriteSheetProcessor<?> sheetProcessor) {
+        if (useTemplate) {
+            return;
+        }
+        ExcelWriteFieldMapping excelWriteFieldMapping = sheetProcessor.getFieldMapping();
+        if (excelWriteFieldMapping == null) {
+            return;
+        }
+        Map<String, Map<Integer, ExcelWriteFieldMappingAttribute>> mme = excelWriteFieldMapping.export();
+        if (mme == null) {
+            return;
+        }
+        for (Map.Entry<String, Map<Integer, ExcelWriteFieldMappingAttribute>> entry : mme.entrySet()) {
+            Map<Integer, ExcelWriteFieldMappingAttribute> me = entry.getValue();
+            for (Integer column : me.keySet()) {
+                sheet.autoSizeColumn(column);
+            }
+        }
     }
 
     @SuppressWarnings("rawtypes")
