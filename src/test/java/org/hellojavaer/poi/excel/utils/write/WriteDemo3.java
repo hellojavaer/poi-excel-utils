@@ -37,32 +37,6 @@ public class WriteDemo3 {
             }
 
             @Override
-            public List<Map> getDataList(ExcelWriteContext<Map> context) {
-                if (b.get() == false) {
-                    b.set(true);
-                    List<Map> list = new ArrayList<Map>();
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("byteField", (byte) 1);
-                    map.put("shortField", (short) 2);
-                    map.put("intField", 3);
-                    map.put("longField", 4L);
-                    map.put("floatField", 5.1f);
-                    map.put("doubleField", 6.23);
-                    map.put("boolField", true);
-                    map.put("dateField", new Date());
-                    map.put("enumField1", "enumField1");
-                    map.put("enumField2", "enumField2");
-                    map.put("stringField", "map_test");
-                    list.add(map);
-                    list.add(map);
-                    list.add(map);
-                    return list;
-                } else {
-                    return null;
-                }
-            }
-
-            @Override
             public void onException(ExcelWriteContext<Map> context, RuntimeException e) {
                 if (e instanceof ExcelWriteException) {
                     ExcelWriteException ewe = (ExcelWriteException) e;
@@ -107,7 +81,28 @@ public class WriteDemo3 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setHeadRowIndex(0);
         // sheetProcessor.setTemplateRowIndex(1);
+        sheetProcessor.setDataList(getDateList());
 
         ExcelUtils.write(ExcelType.XLSX, output, sheetProcessor);
+    }
+
+    private static List<Map> getDateList() {
+        List<Map> list = new ArrayList<Map>();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("byteField", (byte) 1);
+        map.put("shortField", (short) 2);
+        map.put("intField", 3);
+        map.put("longField", 4L);
+        map.put("floatField", 5.1f);
+        map.put("doubleField", 6.23);
+        map.put("boolField", true);
+        map.put("dateField", new Date());
+        map.put("enumField1", "enumField1");
+        map.put("enumField2", "enumField2");
+        map.put("stringField", "map_test");
+        list.add(map);
+        list.add(map);
+        list.add(map);
+        return list;
     }
 }

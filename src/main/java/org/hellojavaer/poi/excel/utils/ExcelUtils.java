@@ -793,8 +793,6 @@ public class ExcelUtils {
                 if (sheetName == null) {
                     sheetName = sheet.getSheetName();
                 }
-                // write head
-                writeHead(sheet, sheetProcessor);
 
                 // proc sheet
                 context.setCurSheet(sheet);
@@ -806,16 +804,16 @@ public class ExcelUtils {
                 context.setCurColIndex(null);
                 // beforeProcess
                 sheetProcessor.beforeProcess(context);
-
+                // write head
+                writeHead(sheet, sheetProcessor);
                 // sheet
                 ExcelProcessControllerImpl controller = new ExcelProcessControllerImpl();
                 int writeRowIndex = sheetProcessor.getStartRowIndex();
                 boolean isBreak = false;
                 Map<Integer, InnerRow> cacheForTemplateRow = new HashMap<Integer, InnerRow>();
-                for (@SuppressWarnings("rawtypes")
-                List dataList = sheetProcessor.getDataList(context); //
-                dataList != null && !dataList.isEmpty(); //
-                dataList = sheetProcessor.getDataList(context)) {
+
+                List<?> dataList = sheetProcessor.getDataList(); //
+                if (dataList != null && !dataList.isEmpty()) {
                     for (Object rowData : dataList) {
                         // proc row
                         Row row = sheet.getRow(writeRowIndex);

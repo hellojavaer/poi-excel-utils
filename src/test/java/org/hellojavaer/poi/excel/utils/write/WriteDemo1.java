@@ -36,33 +36,6 @@ public class WriteDemo1 {
             }
 
             @Override
-            public List<TestBean> getDataList(ExcelWriteContext<TestBean> context) {
-                if (b.get() == false) {
-                    b.set(true);
-                    List<TestBean> list = new ArrayList<TestBean>();
-                    TestBean bean = new TestBean();
-                    bean.setByteField((byte) 1);
-                    bean.setShortField((short) 2);
-                    bean.setIntField(3);
-                    bean.setLongField(4L);
-                    bean.setFloatField(5.1f);
-                    bean.setDoubleField(6.23);
-                    bean.setBoolField(true);
-                    bean.setEnumField1("enumField1");
-                    bean.setEnumField2("enumField2");
-                    bean.setDateField(new Date());
-                    bean.setStringField("test");
-
-                    list.add(bean);
-                    list.add(bean);
-                    list.add(bean);
-                    return list;
-                } else {
-                    return null;
-                }
-            }
-
-            @Override
             public void onException(ExcelWriteContext<TestBean> context, RuntimeException e) {
                 if (e instanceof ExcelWriteException) {
                     ExcelWriteException ewe = (ExcelWriteException) e;
@@ -107,7 +80,29 @@ public class WriteDemo1 {
         sheetProcessor.setFieldMapping(fieldMapping);// required
         sheetProcessor.setHeadRowIndex(0);
         // sheetProcessor.setTemplateRowIndex(1);
+        sheetProcessor.setDataList(getDateList());
 
         ExcelUtils.write(ExcelType.XLSX, output, sheetProcessor);
+    }
+
+    private static List<TestBean> getDateList() {
+        List<TestBean> list = new ArrayList<TestBean>();
+        TestBean bean = new TestBean();
+        bean.setByteField((byte) 1);
+        bean.setShortField((short) 2);
+        bean.setIntField(3);
+        bean.setLongField(4L);
+        bean.setFloatField(5.1f);
+        bean.setDoubleField(6.23);
+        bean.setBoolField(true);
+        bean.setEnumField1("enumField1");
+        bean.setEnumField2("enumField2");
+        bean.setDateField(new Date());
+        bean.setStringField("test");
+
+        list.add(bean);
+        list.add(bean);
+        list.add(bean);
+        return list;
     }
 }

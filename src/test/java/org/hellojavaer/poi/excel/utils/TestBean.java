@@ -21,6 +21,7 @@ public class TestBean implements Serializable {
     private Date              dateField;
     private String            enumField1;
     private String            enumField2;
+    private String            url;
 
     public Byte getByteField() {
         return byteField;
@@ -108,6 +109,14 @@ public class TestBean implements Serializable {
 
     public void setEnumField2(String enumField2) {
         this.enumField2 = enumField2;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
 }
