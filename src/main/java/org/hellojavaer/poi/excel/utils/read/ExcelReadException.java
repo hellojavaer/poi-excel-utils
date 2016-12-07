@@ -24,21 +24,39 @@ public class ExcelReadException extends RuntimeException {
 
     private static final long serialVersionUID               = 1L;
 
-    public static final int   CODE_OF_SHEET_NOT_EXSIT        = 0;
+    public static final int   CODE_OF_SHEET_NOT_EXIST        = 0;
     public static final int   CODE_OF_PROCESS_EXCEPTION      = 1;
     public static final int   CODE_OF_CELL_VALUE_REQUIRED    = 2;
     public static final int   CODE_OF_CELL_VALUE_NOT_MATCHED = 3;
     public static final int   CODE_OF_CELL_ERROR             = 4;
 
+    private String            sheetName;
+    private Integer           sheetIndex;                           // start from 0
     private Integer           rowIndex                       = null;
     private String            colStrIndex                    = null;
     private Integer           colIndex                       = null;
+
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
+    }
+
+    public Integer getSheetIndex() {
+        return sheetIndex;
+    }
+
+    public void setSheetIndex(Integer sheetIndex) {
+        this.sheetIndex = sheetIndex;
+    }
 
     /**
      * [0-99] are system reserved value.user-define value should be larger than
      * or equal to 100.
      */
-    private int               code                           = CODE_OF_PROCESS_EXCEPTION;
+    private int code = CODE_OF_PROCESS_EXCEPTION;
 
     /**
      * [0-99] are system reserved value.user-define value should be larger than
@@ -86,6 +104,15 @@ public class ExcelReadException extends RuntimeException {
 
     public Integer getColIndex() {
         return colIndex;
+    }
+
+    public void setColStrIndex(String colStrIndex) {
+        this.colStrIndex = colStrIndex;
+        if (colStrIndex == null) {
+            this.colIndex = null;
+        } else {
+            this.colIndex = ExcelUtils.convertColCharIndexToIntIndex(colStrIndex);
+        }
     }
 
     public void setColIndex(Integer colIndex) {

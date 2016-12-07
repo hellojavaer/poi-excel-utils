@@ -15,6 +15,19 @@
  */
 package org.hellojavaer.poi.excel.utils;
 
+import com.alibaba.fastjson.util.TypeUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hellojavaer.poi.excel.utils.common.Assert;
+import org.hellojavaer.poi.excel.utils.read.*;
+import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping.ExcelReadFieldMappingAttribute;
+import org.hellojavaer.poi.excel.utils.write.*;
+import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
+import org.springframework.beans.BeanUtils;
+
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,51 +37,8 @@ import java.lang.reflect.Modifier;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Hyperlink;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hellojavaer.poi.excel.utils.common.Assert;
-import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadContext;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadException;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping.ExcelReadFieldMappingAttribute;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellProcessor;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellValueMapping;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteContext;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteException;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteFieldMapping.ExcelWriteFieldMappingAttribute;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteSheetProcessor;
-import org.hellojavaer.poi.excel.utils.write.ExcelWriteTheme;
-import org.springframework.beans.BeanUtils;
-
-import com.alibaba.fastjson.util.TypeUtils;
 
 /**
  * 
@@ -171,13 +141,12 @@ public class ExcelUtils {
             Workbook workbook = WorkbookFactory.create(workbookInputStream);
             for (ExcelReadSheetProcessor<?> sheetProcessor : sheetProcessors) {
                 ExcelReadContext context = new ExcelReadContext();
+                String sheetName = sheetProcessor.getSheetName();
+                Integer sheetIndex = sheetProcessor.getSheetIndex();
                 try {
                     Class clazz = sheetProcessor.getTargetClass();
-                    Integer sheetIndex = sheetProcessor.getSheetIndex();
-                    String sheetName = sheetProcessor.getSheetName();
                     context.setCurSheetIndex(sheetIndex);
                     context.setCurSheetName(sheetName);
-
                     Sheet sheet = null;
                     if (sheetName != null) {
                         try {
@@ -201,7 +170,7 @@ public class ExcelUtils {
                     if (sheet == null) {
                         ExcelReadException e = new ExcelReadException("Sheet Not Found Exception. for sheet name:"
                                                                       + sheetName);
-                        e.setCode(ExcelReadException.CODE_OF_SHEET_NOT_EXSIT);
+                        e.setCode(ExcelReadException.CODE_OF_SHEET_NOT_EXIST);
                         throw e;
                     }
 
@@ -278,8 +247,19 @@ public class ExcelUtils {
                         sheetProcessor.process(context, context.getDataList());
                         context.getDataList().clear();
                     }
-                } catch (RuntimeException e) {
-                    sheetProcessor.onException(context, e);
+                } catch (Throwable e) {
+                    if (e instanceof ExcelReadException) {
+                        ExcelReadException e0 = (ExcelReadException) e;
+                        e0.setSheetName(sheetName);
+                        e0.setSheetIndex(sheetIndex);
+                        sheetProcessor.onException(context, (ExcelReadException) e0);
+                    } else {
+                        ExcelReadException e0 = new ExcelReadException(e);
+                        e0.setSheetName(sheetName);
+                        e0.setSheetIndex(sheetIndex);
+                        e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                        sheetProcessor.onException(context, e0);
+                    }
                 } finally {
                     sheetProcessor.afterProcess(context);
                 }
@@ -328,18 +308,18 @@ public class ExcelUtils {
                 try {
                     controller.reset();
                     t = processor.process(controller, context, row, t);
-                } catch (RuntimeException re) {
-                    if (re instanceof ExcelReadException) {
-                        ExcelReadException ere = (ExcelReadException) re;
-                        ere.setRowIndex(row.getRowNum());
-                        // ere.setColIndex();
-                        throw ere;
+                } catch (Throwable e) {
+                    if (e instanceof ExcelReadException) {
+                        ExcelReadException e0 = (ExcelReadException) e;
+                        e0.setRowIndex(row.getRowNum());
+                        e0.setColIndex(null);
+                        throw e0;
                     } else {
-                        ExcelReadException e = new ExcelReadException(re);
-                        e.setRowIndex(row.getRowNum());
-                        e.setColIndex(null);
-                        e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                        throw e;
+                        ExcelReadException e0 = new ExcelReadException(e);
+                        e0.setRowIndex(row.getRowNum());
+                        e0.setColIndex(null);
+                        e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                        throw e0;
                     }
                 }
             }
@@ -398,7 +378,7 @@ public class ExcelUtils {
                     } else {// java bean
                         try {
                             setProperty(context.getCurRowData(), linkField, address);
-                        } catch (Exception e1) {
+                        } catch (Throwable e1) {
                             ExcelReadException e = new ExcelReadException(e1);
                             e.setRowIndex(curRowIndex);
                             e.setColIndex(curColIndex);
@@ -431,7 +411,7 @@ public class ExcelUtils {
                         value = procValueConvert(context, row, cell, attribute, fieldName, value);
                         setProperty(context.getCurRowData(), fieldName, value);
                     }
-                } catch (Exception e1) {
+                } catch (Throwable e1) {
                     ExcelReadException e = new ExcelReadException(e1);
                     e.setRowIndex(curRowIndex);
                     e.setColIndex(curColIndex);
@@ -521,18 +501,18 @@ public class ExcelUtils {
                         try {
                             convertedValue = valueMapping.getDefaultProcessor().process(context, cell,
                                                                                         new ExcelCellValue(value));
-                        } catch (RuntimeException re) {
-                            if (re instanceof ExcelReadException) {
-                                ExcelReadException ere = (ExcelReadException) re;
-                                ere.setRowIndex(row.getRowNum());
-                                ere.setColIndex(cell.getColumnIndex());
-                                throw ere;
+                        } catch (Throwable e) {
+                            if (e instanceof ExcelReadException) {
+                                ExcelReadException e0 = (ExcelReadException) e;
+                                e0.setRowIndex(row.getRowNum());
+                                e0.setColIndex(cell.getColumnIndex());
+                                throw e0;
                             } else {
-                                ExcelReadException e = new ExcelReadException(re);
-                                e.setRowIndex(row.getRowNum());
-                                e.setColIndex(cell.getColumnIndex());
-                                e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                                throw e;
+                                ExcelReadException e0 = new ExcelReadException(e);
+                                e0.setRowIndex(row.getRowNum());
+                                e0.setColIndex(cell.getColumnIndex());
+                                e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                                throw e0;
                             }
                         }
                         if (convertedValue != null && convertedValue instanceof ExcelCellValue) {
@@ -550,18 +530,18 @@ public class ExcelUtils {
         } else if (entry.getCellProcessor() != null) {
             try {
                 convertedValue = entry.getCellProcessor().process(context, cell, new ExcelCellValue(value));
-            } catch (RuntimeException re) {
-                if (re instanceof ExcelReadException) {
-                    ExcelReadException ere = (ExcelReadException) re;
-                    ere.setRowIndex(row.getRowNum());
-                    ere.setColIndex(cell.getColumnIndex());
-                    throw ere;
+            } catch (Throwable e) {
+                if (e instanceof ExcelReadException) {
+                    ExcelReadException e0 = (ExcelReadException) e;
+                    e0.setRowIndex(row.getRowNum());
+                    e0.setColIndex(cell.getColumnIndex());
+                    throw e0;
                 } else {
-                    ExcelReadException e = new ExcelReadException(re);
-                    e.setRowIndex(row.getRowNum());
-                    e.setColIndex(cell.getColumnIndex());
-                    e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                    throw e;
+                    ExcelReadException e0 = new ExcelReadException(e);
+                    e0.setRowIndex(row.getRowNum());
+                    e0.setColIndex(cell.getColumnIndex());
+                    e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                    throw e0;
                 }
             }
             if (convertedValue != null && convertedValue instanceof ExcelCellValue) {
@@ -747,15 +727,11 @@ public class ExcelUtils {
 
     }
 
-    @SuppressWarnings("unchecked")
     private static void write(boolean useTemplate, Workbook workbook, OutputStream outputStream,
                               ExcelWriteSheetProcessor<?>... sheetProcessors) {
 
-        for (@SuppressWarnings("rawtypes")
-        ExcelWriteSheetProcessor sheetProcessor : sheetProcessors) {
-            @SuppressWarnings("rawtypes")
+        for (ExcelWriteSheetProcessor sheetProcessor : sheetProcessors) {
             ExcelWriteContext context = new ExcelWriteContext();
-
             try {
                 if (sheetProcessor == null) {
                     continue;
@@ -969,7 +945,6 @@ public class ExcelUtils {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     private static void writeDataValidations(Sheet sheet, ExcelWriteSheetProcessor sheetProcessor) {
         int templateRowStartIndex = sheetProcessor.getTemplateStartRowIndex();
         int templateRowEndIndex = sheetProcessor.getTemplateEndRowIndex();
@@ -1057,7 +1032,6 @@ public class ExcelUtils {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static void writeRow(ExcelWriteContext context, InnerRow templateRow, Row row, Object rowData,
                                  ExcelWriteSheetProcessor sheetProcessor) {
         boolean useTemplate = false;
