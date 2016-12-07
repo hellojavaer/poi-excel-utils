@@ -1,5 +1,13 @@
 package org.hellojavaer.poi.excel.utils.write;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.hellojavaer.poi.excel.utils.ExcelProcessController;
+import org.hellojavaer.poi.excel.utils.ExcelUtils;
+import org.hellojavaer.poi.excel.utils.TestBean;
+import org.hellojavaer.poi.excel.utils.TestEnum;
+import org.hellojavaer.poi.excel.utils.read.*;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,21 +17,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.hellojavaer.poi.excel.utils.ExcelProcessController;
-import org.hellojavaer.poi.excel.utils.ExcelUtils;
-import org.hellojavaer.poi.excel.utils.TestBean;
-import org.hellojavaer.poi.excel.utils.TestEnum;
-import org.hellojavaer.poi.excel.utils.read.ExcelCellValue;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadCellProcessor;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadContext;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadException;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadFieldMapping;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadRowProcessor;
-import org.hellojavaer.poi.excel.utils.read.ExcelReadSheetProcessor;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
@@ -49,19 +42,15 @@ public class WriteDemo2 {
             }
 
             @Override
-            public void onException(ExcelWriteContext<TestBean> context, RuntimeException e) {
-                if (e instanceof ExcelWriteException) {
-                    ExcelWriteException ewe = (ExcelWriteException) e;
-                    if (ewe.getCode() == ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED) {
-                        System.out.println("at row:" + (ewe.getRowIndex() + 1) + " column:" + ewe.getColStrIndex()
-                                           + ", data doesn't match.");
-                    } else {
-                        System.out.println("at row:" + (ewe.getRowIndex() + 1) + " column:" + ewe.getColStrIndex()
-                                           + ", process error. detail message is: " + ewe.getMessage());
-                    }
+            public void onException(ExcelWriteContext<TestBean> context, ExcelWriteException e) {
+                if (e.getCode() == ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", data doesn't match.");
                 } else {
-                    throw e;
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", process error. detail message is: " + e.getMessage());
                 }
+                throw e;
             }
 
             @Override
@@ -130,25 +119,21 @@ public class WriteDemo2 {
             }
 
             @Override
-            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
-                if (e instanceof ExcelReadException) {
-                    ExcelReadException ere = (ExcelReadException) e;
-                    if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
-                        System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
-                                           + ", data cant't be null.");
-                    } else if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
-                        System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
-                                           + ", data doesn't match.");
-                    } else if (ere.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
-                        System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
-                                           + ", cell error.");
-                    } else {
-                        System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
-                                           + ", process error. detail message is: " + ere.getMessage());
-                    }
+            public void onException(ExcelReadContext<TestBean> context, ExcelReadException e) {
+                if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", data cant't be null.");
+                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", data doesn't match.");
+                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", cell error.");
                 } else {
-                    throw e;
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", process error. detail message is: " + e.getMessage());
                 }
+                throw e;
             }
 
             @Override

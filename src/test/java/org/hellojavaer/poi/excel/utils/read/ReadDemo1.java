@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class ReadDemo1 {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         InputStream in = ReadDemo1.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
         ExcelReadSheetProcessor<TestBean> sheetProcessor = new ExcelReadSheetProcessor<TestBean>() {
 
@@ -33,19 +33,18 @@ public class ReadDemo1 {
 
             @Override
             public void onException(ExcelReadContext<TestBean> context, ExcelReadException e) {
-                ExcelReadException ere = (ExcelReadException) e;
-                if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
-                    System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
+                if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
                                        + ", data cant't be null.");
-                } else if (ere.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
-                    System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
+                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
                                        + ", data doesn't match.");
-                } else if (ere.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
-                    System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
+                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
                                        + ", cell error.");
                 } else {
-                    System.out.println("at row:" + (ere.getRowIndex() + 1) + " column:" + ere.getColStrIndex()
-                                       + ", process error. detail message is: " + ere.getMessage());
+                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
+                                       + ", process error. detail message is: " + e.getMessage());
                 }
                 throw e;
             }

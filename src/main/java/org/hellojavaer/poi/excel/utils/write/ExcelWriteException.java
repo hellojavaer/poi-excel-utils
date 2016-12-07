@@ -28,9 +28,28 @@ public class ExcelWriteException extends RuntimeException {
     public static final int   CODE_OF_PROCESS_EXCEPTION       = 1;
     public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 2;
 
+    private String            sheetName;
+    private Integer           sheetIndex;
     private Integer           rowIndex                        = null;
     private String            colStrIndex                     = null;
     private Integer           colIndex                        = null;
+
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
+    }
+
+    public Integer getSheetIndex() {
+        return sheetIndex;
+    }
+
+    public void setSheetIndex(Integer sheetIndex) {
+        this.sheetIndex = sheetIndex;
+    }
+
 
     /**
      * [0-99] are system reserved values.user-define value should be larger than
@@ -86,6 +105,15 @@ public class ExcelWriteException extends RuntimeException {
         return colIndex;
     }
 
+    public void setColStrIndex(String colStrIndex) {
+        this.colStrIndex = colStrIndex;
+        if (colStrIndex == null) {
+            this.colIndex = null;
+        } else {
+            this.colIndex = ExcelUtils.convertColCharIndexToIntIndex(colStrIndex);
+        }
+    }
+    
     public void setColIndex(Integer colIndex) {
         this.colIndex = colIndex;
         if (colIndex == null) {

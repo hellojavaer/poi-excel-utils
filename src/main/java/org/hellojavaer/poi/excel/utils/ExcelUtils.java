@@ -732,12 +732,12 @@ public class ExcelUtils {
 
         for (ExcelWriteSheetProcessor sheetProcessor : sheetProcessors) {
             ExcelWriteContext context = new ExcelWriteContext();
+            String sheetName = sheetProcessor.getSheetName();
+            Integer sheetIndex = sheetProcessor.getSheetIndex();
             try {
                 if (sheetProcessor == null) {
                     continue;
                 }
-                String sheetName = sheetProcessor.getSheetName();
-                Integer sheetIndex = sheetProcessor.getSheetIndex();
                 Sheet sheet = null;
                 if (sheetProcessor.getTemplateStartRowIndex() == null
                     && sheetProcessor.getTemplateEndRowIndex() == null) {
@@ -874,8 +874,19 @@ public class ExcelUtils {
                     writeDataValidations(sheet, sheetProcessor);
                     writeStyleAfterFinish(useTemplate, sheet, sheetProcessor);
                 }
-            } catch (RuntimeException e) {
-                sheetProcessor.onException(context, e);
+            } catch (Throwable e) {
+                if (e instanceof ExcelWriteException) {
+                    ExcelWriteException e0 = (ExcelWriteException) e;
+                    e0.setSheetName(sheetName);
+                    e0.setSheetIndex(sheetIndex);
+                    sheetProcessor.onException(context, e0);
+                } else {
+                    ExcelWriteException e0 = new ExcelWriteException(e);
+                    e0.setSheetName(sheetName);
+                    e0.setSheetIndex(sheetIndex);
+                    e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
+                    sheetProcessor.onException(context, e0);
+                }
             } finally {
                 sheetProcessor.afterProcess(context);
             }
@@ -1101,18 +1112,18 @@ public class ExcelUtils {
                     writeCell(cell, val, useTemplate, attribute, rowData);
                     try {
                         processor.process(context, val, cell);
-                    } catch (RuntimeException e) {
+                    } catch (Throwable e) {
                         if (e instanceof ExcelWriteException) {
-                            ExcelWriteException ewe = (ExcelWriteException) e;
-                            ewe.setColIndex(colIndex);
-                            ewe.setRowIndex(row.getRowNum());
-                            throw ewe;
+                            ExcelWriteException e0 = (ExcelWriteException) e;
+                            e0.setColIndex(colIndex);
+                            e0.setRowIndex(row.getRowNum());
+                            throw e0;
                         } else {
-                            ExcelWriteException ewe = new ExcelWriteException(e);
-                            ewe.setColIndex(colIndex);
-                            ewe.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
-                            ewe.setRowIndex(row.getRowNum());
-                            throw ewe;
+                            ExcelWriteException e0 = new ExcelWriteException(e);
+                            e0.setColIndex(colIndex);
+                            e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
+                            e0.setRowIndex(row.getRowNum());
+                            throw e0;
                         }
                     }
                 } else {
@@ -1144,12 +1155,12 @@ public class ExcelUtils {
                                   ExcelWriteFieldMappingAttribute attribute, Object bean) {
         try {
             writeCell(cell, val, userTemplate, attribute, bean);
-        } catch (RuntimeException e) {
-            ExcelWriteException ewe = new ExcelWriteException(e);
-            ewe.setColIndex(colIndex);
-            ewe.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
-            ewe.setRowIndex(rowIndex);
-            throw ewe;
+        } catch (Throwable e) {
+            ExcelWriteException e0 = new ExcelWriteException(e);
+            e0.setColIndex(colIndex);
+            e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
+            e0.setRowIndex(rowIndex);
+            throw e0;
         }
     }
 
