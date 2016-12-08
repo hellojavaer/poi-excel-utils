@@ -17,35 +17,23 @@ import java.util.List;
  */
 public class ReadDemo1 {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         InputStream in = ReadDemo1.class.getResourceAsStream("/excel/xlsx/data_file1.xlsx");
         ExcelReadSheetProcessor<TestBean> sheetProcessor = new ExcelReadSheetProcessor<TestBean>() {
 
             @Override
             public void beforeProcess(ExcelReadContext<TestBean> context) {
-
             }
 
             @Override
             public void process(ExcelReadContext<TestBean> context, List<TestBean> list) {
                 System.out.println(JSONObject.toJSONString(list, SerializerFeature.WriteDateUseDateFormat));
+                throw new IllegalStateException("step3.");
+                // throw new ExcelReadException("step3.");
             }
 
             @Override
             public void onException(ExcelReadContext<TestBean> context, ExcelReadException e) {
-                if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data cant't be null.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data doesn't match.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", cell error.");
-                } else {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", process error. detail message is: " + e.getMessage());
-                }
                 throw e;
             }
 
@@ -68,7 +56,8 @@ public class ReadDemo1 {
         fieldMapping.put("J", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
-                // throw new ExcelReadException("test throw exception");
+                // throw new ExcelReadException("step1.");
+                // throw new IllegalStateException("step1.");
                 return cellValue.getStringValue() + "=>row:" + context.getCurRowIndex() + ",col："
                        + context.getCurColStrIndex();
             }
@@ -94,10 +83,18 @@ public class ReadDemo1 {
 
             public TestBean process(ExcelProcessController controller, ExcelReadContext<TestBean> context, Row row,
                                     TestBean t) {
+                // throw new ExcelReadException("step2.");
+                // throw new IllegalStateException("step2.");
                 return t;
             }
         });
 
-        ExcelUtils.read(in, sheetProcessor);
+        try {
+            ExcelUtils.read(in, sheetProcessor);
+        } catch (ExcelReadException e) {
+            // throw e.getCause();
+            // System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

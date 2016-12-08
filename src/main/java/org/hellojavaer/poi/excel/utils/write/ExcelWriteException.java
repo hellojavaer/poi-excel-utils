@@ -22,40 +22,78 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelWriteException extends RuntimeException {
 
-    private static final long serialVersionUID                = 1L;
+    private static final long serialVersionUID              = 1L;
 
-    public static final int   CODE_OF_SHEET_NOT_EXSIT         = 0;
-    public static final int   CODE_OF_PROCESS_EXCEPTION       = 1;
-    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCHED = 2;
+    public static final int   CODE_OF_PROCESS_EXCEPTION     = 0;
+    public static final int   CODE_OF_SHEET_NOT_EXIST       = 20;
+    public static final int   CODE_OF_FIELD_VALUE_NOT_MATCH = 61;
 
-    private String            sheetName;
-    private Integer           sheetIndex;
-    private Integer           rowIndex                        = null;
-    private String            colStrIndex                     = null;
-    private Integer           colIndex                        = null;
-
-    public String getSheetName() {
-        return sheetName;
-    }
-
-    public void setSheetName(String sheetName) {
-        this.sheetName = sheetName;
-    }
-
-    public Integer getSheetIndex() {
-        return sheetIndex;
-    }
-
-    public void setSheetIndex(Integer sheetIndex) {
-        this.sheetIndex = sheetIndex;
-    }
-
+    private String            sheetName                     = null;
+    private Integer           sheetIndex                    = null;
+    private Integer           rowIndex                      = null;
+    private String            colStrIndex                   = null;
+    private Integer           colIndex                      = null;
 
     /**
      * [0-99] are system reserved values.user-define value should be larger than
      * or equal to 100.
      */
-    private int               code                            = CODE_OF_PROCESS_EXCEPTION;
+    private int               code                          = CODE_OF_PROCESS_EXCEPTION;
+
+    private String            msg;
+
+    public ExcelWriteException() {
+        super();
+    }
+
+    public ExcelWriteException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ExcelWriteException(String message) {
+        super(message);
+    }
+
+    public ExcelWriteException(Throwable cause) {
+        super(cause);
+    }
+
+    @Override
+    public String getMessage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.msg);
+        sb.append(" Detail coordinate is sheet:");
+        sb.append(this.getSheetName());
+        sb.append("[index:");
+        sb.append(this.getSheetIndex());
+        sb.append("]");
+        sb.append(" row:");
+        if (this.getRowIndex() != null) {
+            sb.append(this.getRowIndex() + 1);
+        } else {
+            sb.append("null");
+        }
+        sb.append(" column:");
+        sb.append(this.getColStrIndex());
+        sb.append("[index:");
+        sb.append(this.getColIndex());
+        sb.append("], code is ");
+        sb.append(this.getCode());
+        sb.append(", and description is '");
+        switch (this.getCode()) {
+            case CODE_OF_PROCESS_EXCEPTION:
+                sb.append("process exception");
+                break;
+            case CODE_OF_SHEET_NOT_EXIST:
+                sb.append("sheet not exist");
+                break;
+            case CODE_OF_FIELD_VALUE_NOT_MATCH:
+                sb.append("field value not match");
+                break;
+        }
+        sb.append("'.");
+        return sb.toString();
+    }
 
     /**
      * [0-99] are system reserved values.user-define value should be larger than
@@ -73,20 +111,20 @@ public class ExcelWriteException extends RuntimeException {
         this.code = code;
     }
 
-    public ExcelWriteException() {
-        super();
+    public String getSheetName() {
+        return sheetName;
     }
 
-    public ExcelWriteException(String message, Throwable cause) {
-        super(message, cause);
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
     }
 
-    public ExcelWriteException(String message) {
-        super(message);
+    public Integer getSheetIndex() {
+        return sheetIndex;
     }
 
-    public ExcelWriteException(Throwable cause) {
-        super(cause);
+    public void setSheetIndex(Integer sheetIndex) {
+        this.sheetIndex = sheetIndex;
     }
 
     public Integer getRowIndex() {
@@ -113,7 +151,7 @@ public class ExcelWriteException extends RuntimeException {
             this.colIndex = ExcelUtils.convertColCharIndexToIntIndex(colStrIndex);
         }
     }
-    
+
     public void setColIndex(Integer colIndex) {
         this.colIndex = colIndex;
         if (colIndex == null) {

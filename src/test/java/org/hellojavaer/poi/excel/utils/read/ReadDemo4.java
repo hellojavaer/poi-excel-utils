@@ -34,19 +34,6 @@ public class ReadDemo4 {
 
             @Override
             public void onException(ExcelReadContext<HashMap> context, ExcelReadException e) {
-                if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data cant't be null.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data doesn't match.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", cell error.");
-                } else {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", process error. detail message is: " + e.getMessage());
-                }
                 throw e;
             }
 

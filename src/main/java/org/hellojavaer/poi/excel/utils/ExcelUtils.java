@@ -94,7 +94,8 @@ public class ExcelUtils {
                 colIndex = colCache.get(colIndexOrColName);
                 if (colIndex == null) {
                     throw new IllegalStateException("For sheet:" + sheet.getSheetName() + " headRowIndex:"
-                                                    + headRowIndex + " can't find colum named:" + colIndexOrColName);
+                                                    + headRowIndex + " can't find colum named '" + colIndexOrColName
+                                                    + "'");
                 }
             }
             tar.put(colIndex, entry.getValue());
@@ -155,8 +156,9 @@ public class ExcelUtils {
                             // ignore
                         }
                         if (sheet != null && sheetIndex != null && !sheetIndex.equals(workbook.getSheetIndex(sheet))) {
-                            throw new IllegalArgumentException("sheetName[" + sheetName + "] and sheetIndex["
-                                                               + sheetIndex + "] not match.");
+                            ExcelReadException e = new ExcelReadException();
+                            e.setCode(ExcelReadException.CODE_OF_SHEET_NAME_AND_INDEX_NOT_MATCH);
+                            throw e;
                         }
                     } else if (sheetIndex != null) {
                         try {
@@ -165,10 +167,12 @@ public class ExcelUtils {
                             // ignore
                         }
                     } else {
-                        throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
+                        ExcelReadException e = new ExcelReadException();
+                        e.setCode(ExcelReadException.CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY);
+                        throw e;
                     }
                     if (sheet == null) {
-                        ExcelReadException e = new ExcelReadException("Sheet Not Found Exception. for sheet name:"
+                        ExcelReadException e = new ExcelReadException("name of '" + sheetName + "' sheet is not exist"
                                                                       + sheetName);
                         e.setCode(ExcelReadException.CODE_OF_SHEET_NOT_EXIST);
                         throw e;
@@ -312,7 +316,7 @@ public class ExcelUtils {
                     if (e instanceof ExcelReadException) {
                         ExcelReadException e0 = (ExcelReadException) e;
                         e0.setRowIndex(row.getRowNum());
-                        e0.setColIndex(null);
+                        // e0.setColIndex(null);//user may want to set this value,
                         throw e0;
                     } else {
                         ExcelReadException e0 = new ExcelReadException(e);
@@ -378,12 +382,19 @@ public class ExcelUtils {
                     } else {// java bean
                         try {
                             setProperty(context.getCurRowData(), linkField, address);
-                        } catch (Throwable e1) {
-                            ExcelReadException e = new ExcelReadException(e1);
-                            e.setRowIndex(curRowIndex);
-                            e.setColIndex(curColIndex);
-                            e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                            throw e;
+                        } catch (Throwable e) {
+                            if (e instanceof ExcelReadException) {
+                                ExcelReadException e0 = (ExcelReadException) e;
+                                e0.setRowIndex(curRowIndex);
+                                e0.setColIndex(curColIndex);
+                                throw e0;
+                            } else {
+                                ExcelReadException e0 = new ExcelReadException(e);
+                                e0.setRowIndex(curRowIndex);
+                                e0.setColIndex(curColIndex);
+                                e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                                throw e0;
+                            }
                         }
                     }
                 }
@@ -411,12 +422,19 @@ public class ExcelUtils {
                         value = procValueConvert(context, row, cell, attribute, fieldName, value);
                         setProperty(context.getCurRowData(), fieldName, value);
                     }
-                } catch (Throwable e1) {
-                    ExcelReadException e = new ExcelReadException(e1);
-                    e.setRowIndex(curRowIndex);
-                    e.setColIndex(curColIndex);
-                    e.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
-                    throw e;
+                } catch (Throwable e) {
+                    if (e instanceof ExcelReadException) {
+                        ExcelReadException e0 = (ExcelReadException) e;
+                        e0.setRowIndex(curRowIndex);
+                        e0.setColIndex(curColIndex);
+                        throw e0;
+                    } else {
+                        ExcelReadException e0 = new ExcelReadException(e);
+                        e0.setRowIndex(curRowIndex);
+                        e0.setColIndex(curColIndex);
+                        e0.setCode(ExcelReadException.CODE_OF_PROCESS_EXCEPTION);
+                        throw e0;
+                    }
                 }
             }
         }
@@ -522,7 +540,7 @@ public class ExcelUtils {
                         ExcelReadException e = new ExcelReadException("Cell value is value " + strValue);
                         e.setRowIndex(row.getRowNum());
                         e.setColIndex(cell.getColumnIndex());
-                        e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED);
+                        e.setCode(ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCH);
                         throw e;
                     }
                 }
@@ -765,9 +783,8 @@ public class ExcelUtils {
                         throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
                     }
                     if (sheet == null) {
-                        ExcelWriteException e = new ExcelWriteException("Sheet Not Found Exception. for sheet name:"
-                                                                        + sheetName);
-                        e.setCode(ExcelWriteException.CODE_OF_SHEET_NOT_EXSIT);
+                        ExcelWriteException e = new ExcelWriteException("sheet of '" + sheetName + "' is not exist.");
+                        e.setCode(ExcelWriteException.CODE_OF_SHEET_NOT_EXIST);
                         throw e;
                     }
                 } else {
@@ -1098,7 +1115,7 @@ public class ExcelUtils {
                                 valueMapping.getDefaultProcessor().process(context, rowData, cell);
                             } else {
                                 ExcelWriteException ex = new ExcelWriteException("Field value is " + key);
-                                ex.setCode(ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED);
+                                ex.setCode(ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCH);
                                 ex.setColIndex(colIndex);
                                 ex.setRowIndex(row.getRowNum());
                                 throw ex;
@@ -1120,9 +1137,9 @@ public class ExcelUtils {
                             throw e0;
                         } else {
                             ExcelWriteException e0 = new ExcelWriteException(e);
+                            e0.setRowIndex(row.getRowNum());
                             e0.setColIndex(colIndex);
                             e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
-                            e0.setRowIndex(row.getRowNum());
                             throw e0;
                         }
                     }
@@ -1156,11 +1173,18 @@ public class ExcelUtils {
         try {
             writeCell(cell, val, userTemplate, attribute, bean);
         } catch (Throwable e) {
-            ExcelWriteException e0 = new ExcelWriteException(e);
-            e0.setColIndex(colIndex);
-            e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
-            e0.setRowIndex(rowIndex);
-            throw e0;
+            if (e instanceof ExcelWriteException) {
+                ExcelWriteException e0 = new ExcelWriteException();
+                e0.setRowIndex(rowIndex);
+                e0.setColIndex(colIndex);
+                throw e0;
+            } else {
+                ExcelWriteException e0 = new ExcelWriteException(e);
+                e0.setRowIndex(rowIndex);
+                e0.setColIndex(colIndex);
+                e0.setCode(ExcelWriteException.CODE_OF_PROCESS_EXCEPTION);
+                throw e0;
+            }
         }
     }
 

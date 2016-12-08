@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.hellojavaer.poi.excel.utils.ExcelProcessController;
-import org.hellojavaer.poi.excel.utils.ExcelUtils;
-import org.hellojavaer.poi.excel.utils.TestBean;
-import org.hellojavaer.poi.excel.utils.TestEnum;
+import org.hellojavaer.poi.excel.utils.*;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -34,19 +31,6 @@ public class ReadDemo2 {
 
             @Override
             public void onException(ExcelReadContext<TestBean> context, ExcelReadException e) {
-                if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_REQUIRED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data cant't be null.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_VALUE_NOT_MATCHED) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data doesn't match.");
-                } else if (e.getCode() == ExcelReadException.CODE_OF_CELL_ERROR) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", cell error.");
-                } else {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", process error. detail message is: " + e.getMessage());
-                }
                 throw e;
             }
 
@@ -69,9 +53,9 @@ public class ReadDemo2 {
         fieldMapping.put("enum1", "enumField1").setCellProcessor(new ExcelReadCellProcessor() {
 
             public Object process(ExcelReadContext<?> context, Cell cell, ExcelCellValue cellValue) {
-                // throw new ExcelReadException("test throw exception");
-                return cellValue.getStringValue() + "=>row:" + context.getCurRowIndex() + ",col："
-                       + context.getCurColStrIndex();
+                 throw new ExcelReadException("test throw exception");
+                //return cellValue.getStringValue() + "=>row:" + context.getCurRowIndex() + ",col："
+                //       + context.getCurColStrIndex();
             }
         });
 
@@ -99,6 +83,10 @@ public class ReadDemo2 {
             }
         });
 
-        ExcelUtils.read(in, sheetProcessor);
+        try {
+            ExcelUtils.read(in, sheetProcessor);
+        } catch (ExcelReadException e) {
+            System.out.println(ExcelReadExceptionFormat.format(e));
+        }
     }
 }
