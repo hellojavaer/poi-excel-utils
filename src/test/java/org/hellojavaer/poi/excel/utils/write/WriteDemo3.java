@@ -34,13 +34,6 @@ public class WriteDemo3 {
 
             @Override
             public void onException(ExcelWriteContext<Map> context, ExcelWriteException e) {
-                if (e.getCode() == ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCH) {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", data doesn't match.");
-                } else {
-                    System.out.println("at row:" + (e.getRowIndex() + 1) + " column:" + e.getColStrIndex()
-                                       + ", process error. detail message is: " + e.getMessage());
-                }
                 throw e;
             }
 

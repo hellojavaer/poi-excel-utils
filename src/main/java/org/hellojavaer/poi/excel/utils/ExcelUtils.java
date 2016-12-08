@@ -770,8 +770,11 @@ public class ExcelUtils {
                             // ignore
                         }
                         if (sheet != null && sheetIndex != null && !sheetIndex.equals(workbook.getSheetIndex(sheet))) {
-                            throw new IllegalArgumentException("sheetName[" + sheetName + "] and sheetIndex["
-                                                               + sheetIndex + "] not match.");
+                            ExcelWriteException e = new ExcelWriteException("sheetName[" + sheetName
+                                                                            + "] and sheetIndex[" + sheetIndex
+                                                                            + "] not match.");
+                            e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_NOT_MATCH);
+                            throw e;
                         }
                     } else if (sheetIndex != null) {
                         try {
@@ -780,7 +783,9 @@ public class ExcelUtils {
                             // ignore
                         }
                     } else {
-                        throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
+                        ExcelWriteException e = new ExcelWriteException("sheetName or sheetIndex can't be null");
+                        e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY);
+                        throw e;
                     }
                     if (sheet == null) {
                         ExcelWriteException e = new ExcelWriteException("sheet of '" + sheetName + "' is not exist.");
@@ -792,8 +797,11 @@ public class ExcelUtils {
                         sheet = workbook.getSheet(sheetName);
                         if (sheet != null) {
                             if (sheetIndex != null && !sheetIndex.equals(workbook.getSheetIndex(sheet))) {
-                                throw new IllegalArgumentException("sheetName[" + sheetName + "] and sheetIndex["
-                                                                   + sheetIndex + "] not match.");
+                                ExcelWriteException e = new ExcelWriteException("sheetName[" + sheetName
+                                                                                + "] and sheetIndex[" + sheetIndex
+                                                                                + "] not match.");
+                                e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_NOT_MATCH);
+                                throw e;
                             }
                         } else {
                             sheet = workbook.createSheet(sheetName);
@@ -805,7 +813,9 @@ public class ExcelUtils {
                         sheet = workbook.createSheet();
                         workbook.setSheetOrder(sheet.getSheetName(), sheetIndex);
                     } else {
-                        throw new IllegalArgumentException("sheetName or sheetIndex can't be null");
+                        ExcelWriteException e = new ExcelWriteException("sheetName or sheetIndex can't be null.");
+                        e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY);
+                        throw e;
                     }
                 }
 
