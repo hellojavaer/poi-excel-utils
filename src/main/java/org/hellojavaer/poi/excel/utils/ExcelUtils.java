@@ -172,8 +172,7 @@ public class ExcelUtils {
                         throw e;
                     }
                     if (sheet == null) {
-                        ExcelReadException e = new ExcelReadException("name of '" + sheetName + "' sheet is not exist"
-                                                                      + sheetName);
+                        ExcelReadException e = new ExcelReadException("Sheet of '" + sheetName + "' is not exist");
                         e.setCode(ExcelReadException.CODE_OF_SHEET_NOT_EXIST);
                         throw e;
                     }
@@ -495,7 +494,7 @@ public class ExcelUtils {
                 value = cell.getStringCellValue();
                 break;
             default:
-                throw new RuntimeException("unsupport cell type " + cellType);
+                throw new RuntimeException("Unsupport cell type " + cellType);
         }
         return value;
     }
@@ -783,7 +782,7 @@ public class ExcelUtils {
                             // ignore
                         }
                     } else {
-                        ExcelWriteException e = new ExcelWriteException("sheetName or sheetIndex can't be null");
+                        ExcelWriteException e = new ExcelWriteException("sheetName and sheetIndex can't be both null");
                         e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY);
                         throw e;
                     }
@@ -813,7 +812,7 @@ public class ExcelUtils {
                         sheet = workbook.createSheet();
                         workbook.setSheetOrder(sheet.getSheetName(), sheetIndex);
                     } else {
-                        ExcelWriteException e = new ExcelWriteException("sheetName or sheetIndex can't be null.");
+                        ExcelWriteException e = new ExcelWriteException("SheetName and sheetIndex can't be both null.");
                         e.setCode(ExcelWriteException.CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY);
                         throw e;
                     }
