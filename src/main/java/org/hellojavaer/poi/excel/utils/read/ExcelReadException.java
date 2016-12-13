@@ -22,23 +22,88 @@ import org.hellojavaer.poi.excel.utils.ExcelUtils;
  */
 public class ExcelReadException extends RuntimeException {
 
-    private static final long serialVersionUID               = 1L;
+    private static final long serialVersionUID                       = 1L;
 
-    public static final int   CODE_OF_SHEET_NOT_EXSIT        = 0;
-    public static final int   CODE_OF_PROCESS_EXCEPTION      = 1;
-    public static final int   CODE_OF_CELL_VALUE_REQUIRED    = 2;
-    public static final int   CODE_OF_CELL_VALUE_NOT_MATCHED = 3;
-    public static final int   CODE_OF_CELL_ERROR             = 4;
+    public static final int   CODE_OF_PROCESS_EXCEPTION              = 0;
+    public static final int   CODE_OF_SHEET_NOT_EXIST                = 20;
+    public static final int   CODE_OF_SHEET_NAME_AND_INDEX_NOT_MATCH = 21;
+    public static final int   CODE_OF_SHEET_NAME_AND_INDEX_IS_EMPTY  = 22;
+    public static final int   CODE_OF_CELL_VALUE_REQUIRED            = 60;
+    public static final int   CODE_OF_CELL_VALUE_NOT_MATCH           = 61;
+    public static final int   CODE_OF_CELL_ERROR                     = 62;
 
-    private Integer           rowIndex                       = null;
-    private String            colStrIndex                    = null;
-    private Integer           colIndex                       = null;
+    private String            sheetName                              = null;
+    private Integer           sheetIndex                             = null;
+    private Integer           rowIndex                               = null;
+    private String            colStrIndex                            = null;
+    private Integer           colIndex                               = null;
 
+    private String            msg;
     /**
      * [0-99] are system reserved value.user-define value should be larger than
      * or equal to 100.
      */
-    private int               code                           = CODE_OF_PROCESS_EXCEPTION;
+    private int               code                                   = CODE_OF_PROCESS_EXCEPTION;
+
+    public ExcelReadException() {
+    }
+
+    public ExcelReadException(Throwable cause) {
+        super(cause);
+    }
+
+    public ExcelReadException(String message) {
+        super(message);
+        this.msg = message;
+    }
+
+    public ExcelReadException(String message, Throwable cause) {
+        super(message, cause);
+        this.msg = message;
+    }
+
+    @Override
+    public String getMessage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.msg);
+        sb.append(" Detail coordinate is sheet:");
+        sb.append(this.getSheetName());
+        sb.append("[index:");
+        sb.append(this.getSheetIndex());
+        sb.append("]");
+        sb.append(" row:");
+        if (this.getRowIndex() != null) {
+            sb.append(this.getRowIndex() + 1);
+        } else {
+            sb.append("null");
+        }
+        sb.append(" column:");
+        sb.append(this.getColStrIndex());
+        sb.append("[index:");
+        sb.append(this.getColIndex());
+        sb.append("], code is ");
+        sb.append(this.getCode());
+        sb.append(", and description is '");
+        switch (this.getCode()) {
+            case CODE_OF_PROCESS_EXCEPTION:
+                sb.append("process exception");
+                break;
+            case CODE_OF_SHEET_NOT_EXIST:
+                sb.append("sheet not exist");
+                break;
+            case CODE_OF_CELL_VALUE_REQUIRED:
+                sb.append("cell value is required");
+                break;
+            case CODE_OF_CELL_VALUE_NOT_MATCH:
+                sb.append("cell value not match");
+                break;
+            case CODE_OF_CELL_ERROR:
+                sb.append("process error");
+                break;
+        }
+        sb.append("'.");
+        return sb.toString();
+    }
 
     /**
      * [0-99] are system reserved value.user-define value should be larger than
@@ -56,20 +121,20 @@ public class ExcelReadException extends RuntimeException {
         this.code = code;
     }
 
-    public ExcelReadException() {
-        super();
+    public String getSheetName() {
+        return sheetName;
     }
 
-    public ExcelReadException(String message, Throwable cause) {
-        super(message, cause);
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
     }
 
-    public ExcelReadException(String message) {
-        super(message);
+    public Integer getSheetIndex() {
+        return sheetIndex;
     }
 
-    public ExcelReadException(Throwable cause) {
-        super(cause);
+    public void setSheetIndex(Integer sheetIndex) {
+        this.sheetIndex = sheetIndex;
     }
 
     public Integer getRowIndex() {
@@ -86,6 +151,15 @@ public class ExcelReadException extends RuntimeException {
 
     public Integer getColIndex() {
         return colIndex;
+    }
+
+    public void setColStrIndex(String colStrIndex) {
+        this.colStrIndex = colStrIndex;
+        if (colStrIndex == null) {
+            this.colIndex = null;
+        } else {
+            this.colIndex = ExcelUtils.convertColCharIndexToIntIndex(colStrIndex);
+        }
     }
 
     public void setColIndex(Integer colIndex) {

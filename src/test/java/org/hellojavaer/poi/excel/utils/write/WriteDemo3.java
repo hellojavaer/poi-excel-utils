@@ -1,20 +1,16 @@
 package org.hellojavaer.poi.excel.utils.write;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.hellojavaer.poi.excel.utils.ExcelType;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
@@ -37,19 +33,8 @@ public class WriteDemo3 {
             }
 
             @Override
-            public void onException(ExcelWriteContext<Map> context, RuntimeException e) {
-                if (e instanceof ExcelWriteException) {
-                    ExcelWriteException ewe = (ExcelWriteException) e;
-                    if (ewe.getCode() == ExcelWriteException.CODE_OF_FIELD_VALUE_NOT_MATCHED) {
-                        System.out.println("at row:" + (ewe.getRowIndex() + 1) + " column:" + ewe.getColStrIndex()
-                                           + ", data doesn't match.");
-                    } else {
-                        System.out.println("at row:" + (ewe.getRowIndex() + 1) + " column:" + ewe.getColStrIndex()
-                                           + ", process error. detail message is: " + ewe.getMessage());
-                    }
-                } else {
-                    throw e;
-                }
+            public void onException(ExcelWriteContext<Map> context, ExcelWriteException e) {
+                throw e;
             }
 
             @Override

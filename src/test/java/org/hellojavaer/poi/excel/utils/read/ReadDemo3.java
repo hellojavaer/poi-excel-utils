@@ -1,14 +1,14 @@
 package org.hellojavaer.poi.excel.utils.read;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.List;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.hellojavaer.poi.excel.utils.ExcelProcessController;
 import org.hellojavaer.poi.excel.utils.ExcelUtils;
 import org.hellojavaer.poi.excel.utils.TestBean;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
@@ -28,7 +28,7 @@ public class ReadDemo3 {
             }
 
             @Override
-            public void onException(ExcelReadContext<TestBean> context, RuntimeException e) {
+            public void onException(ExcelReadContext<TestBean> context, ExcelReadException e) {
                 throw e;
             }
 

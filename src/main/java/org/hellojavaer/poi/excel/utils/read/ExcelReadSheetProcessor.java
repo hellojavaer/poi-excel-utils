@@ -37,7 +37,7 @@ public abstract class ExcelReadSheetProcessor<T> {
 
     public abstract void process(ExcelReadContext<T> context, List<T> list);
 
-    public abstract void onException(ExcelReadContext<T> context, RuntimeException e);
+    public abstract void onException(ExcelReadContext<T> context, ExcelReadException e);
 
     public abstract void afterProcess(ExcelReadContext<T> context);
 
@@ -58,7 +58,7 @@ public abstract class ExcelReadSheetProcessor<T> {
     /**
      * required.it can be replaced with {@code setSheetIndex};
      * 
-     * @param sheetIndex
+     * @param
      * @see #setSheetIndex
      */
     public String getSheetName() {
@@ -72,7 +72,7 @@ public abstract class ExcelReadSheetProcessor<T> {
     /**
      * required
      * 
-     * @param sheetIndex
+     * @param
      */
     public int getStartRowIndex() {
         return startRowIndex;
@@ -137,7 +137,7 @@ public abstract class ExcelReadSheetProcessor<T> {
 
     /**
      * 
-     * @param rowEndIndex
+     * @param endRowIndex
      */
     public void setEndRowIndex(Integer endRowIndex) {
         this.endRowIndex = endRowIndex;

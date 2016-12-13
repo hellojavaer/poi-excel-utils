@@ -15,9 +15,9 @@
  */
 package org.hellojavaer.poi.excel.utils.write;
 
-import java.util.List;
-
 import org.hellojavaer.poi.excel.utils.common.Assert;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>
@@ -26,7 +26,7 @@ public abstract class ExcelWriteSheetProcessor<T> {
 
     public abstract void beforeProcess(ExcelWriteContext<T> context);
 
-    public abstract void onException(ExcelWriteContext<T> context, RuntimeException e);
+    public abstract void onException(ExcelWriteContext<T> context, ExcelWriteException e);
 
     public abstract void afterProcess(ExcelWriteContext<T> context);
 
