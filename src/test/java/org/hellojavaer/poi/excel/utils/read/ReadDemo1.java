@@ -28,7 +28,7 @@ public class ReadDemo1 {
             @Override
             public void process(ExcelReadContext<TestBean> context, List<TestBean> list) {
                 System.out.println(JSONObject.toJSONString(list, SerializerFeature.WriteDateUseDateFormat));
-                throw new IllegalStateException("step3.");
+                // throw new IllegalStateException("step3.");
                 // throw new ExcelReadException("step3.");
             }
 

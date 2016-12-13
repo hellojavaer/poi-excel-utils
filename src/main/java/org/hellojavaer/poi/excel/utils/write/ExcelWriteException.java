@@ -50,10 +50,12 @@ public class ExcelWriteException extends RuntimeException {
 
     public ExcelWriteException(String message, Throwable cause) {
         super(message, cause);
+        this.msg = message;
     }
 
     public ExcelWriteException(String message) {
         super(message);
+        this.msg = message;
     }
 
     public ExcelWriteException(Throwable cause) {
