@@ -509,8 +509,8 @@ public class ExcelUtils {
             convertedValue = valueMapping.get(strValue);
             if (convertedValue == null) {
                 if (!valueMapping.containsKey(strValue)) {
-                    if (valueMapping.isSettedDefaultValue()) {
-                        if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
+                    if (valueMapping.isUseDefaultValue()) {
+                        if (valueMapping.isUseDefaultValueWithDefaultInput()) {
                             convertedValue = value;
                         } else {
                             convertedValue = valueMapping.getDefaultValue();
@@ -1114,8 +1114,8 @@ public class ExcelUtils {
                         writeCell(row.getRowNum(), colIndex, cell, cval, useTemplate, attribute, rowData);
                     } else {
                         if (!valueMapping.containsKey(key)) {
-                            if (valueMapping.isSettedDefaultValue()) {
-                                if (valueMapping.isSettedDefaultValueWithDefaultInput()) {
+                            if (valueMapping.isUseDefaultValue()) {
+                                if (valueMapping.isUseDefaultValueWithDefaultInput()) {
                                     writeCell(row.getRowNum(), colIndex, cell, val, useTemplate, attribute, rowData);
                                 } else {
                                     writeCell(row.getRowNum(), colIndex, cell, valueMapping.getDefaultValue(),

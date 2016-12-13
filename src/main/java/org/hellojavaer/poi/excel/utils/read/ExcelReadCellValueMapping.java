@@ -15,9 +15,9 @@
  */
 package org.hellojavaer.poi.excel.utils.read;
 
-import java.util.HashMap;
-
 import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellValueMapping;
+
+import java.util.HashMap;
 
 /**
  * Config the mapping between source value(which must be convertd to type of
@@ -32,11 +32,11 @@ import org.hellojavaer.poi.excel.utils.write.ExcelWriteCellValueMapping;
  */
 public class ExcelReadCellValueMapping extends HashMap<String, Object> {
 
-    private static final long      serialVersionUID   = 1L;
+    private static final long      serialVersionUID = 1L;
 
-    private static final Object    DEFAULT_INPUT      = new Object();
-    private boolean                settedDefaultValue = false;
-    private Object                 defaultValue       = null;
+    private static final Object DEFAULT_INPUT   = new Object();
+    private boolean             useDefaultValue = false;
+    private Object              defaultValue    = null;
     private ExcelReadCellProcessor defaultProcessor;
 
     public Object getDefaultValue() {
@@ -45,25 +45,25 @@ public class ExcelReadCellValueMapping extends HashMap<String, Object> {
 
     public void setDefaultValue(Object val) {
         this.defaultValue = val;
-        this.settedDefaultValue = true;
+        this.useDefaultValue = true;
     }
 
     public void setDefaultValueWithDefaultInput() {
         this.defaultValue = DEFAULT_INPUT;
-        this.settedDefaultValue = true;
+        this.useDefaultValue = true;
     }
 
     public void resetDefaultValue() {
         this.defaultValue = null;
-        this.settedDefaultValue = false;
+        this.useDefaultValue = false;
     }
 
-    public boolean isSettedDefaultValue() {
-        return settedDefaultValue;
+    public boolean isUseDefaultValue() {
+        return useDefaultValue;
     }
 
-    public boolean isSettedDefaultValueWithDefaultInput() {
-        return settedDefaultValue && (defaultValue == DEFAULT_INPUT);
+    public boolean isUseDefaultValueWithDefaultInput() {
+        return useDefaultValue && (defaultValue == DEFAULT_INPUT);
     }
 
     public ExcelReadCellProcessor getDefaultProcessor() {

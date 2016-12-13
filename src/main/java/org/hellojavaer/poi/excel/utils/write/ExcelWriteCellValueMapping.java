@@ -15,16 +15,16 @@
  */
 package org.hellojavaer.poi.excel.utils.write;
 
-import java.util.HashMap;
-
 import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
+
+import java.util.HashMap;
 
 /**
  * Config the mapping between source value(which must be convertd to type of
  * String) to target value.<br>
  * If you have used this configration, it also requries that very source value
  * must have a target value. If not, {@code #ExcelWriteException} will been
- * thrown. To process this case, you can use 'setDefaultValue' method or
+ * thrown. To process this case, you can use 'useDefaultValue' method or
  * 'setDefaultProcessor' to set default value.
  * 
  * @see ExcelReadCellValueMapping
@@ -32,11 +32,11 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadCellValueMapping;
  */
 public class ExcelWriteCellValueMapping extends HashMap<String, Object> {
 
-    private static final long       serialVersionUID   = 1L;
+    private static final long       serialVersionUID = 1L;
 
-    private static final Object     DEFAULT_INPUT      = new Object();
-    private boolean                 settedDefaultValue = false;
-    private Object                  defaultValue       = null;
+    private static final Object     DEFAULT_INPUT    = new Object();
+    private boolean                 useDefaultValue  = false;
+    private Object                  defaultValue     = null;
     @SuppressWarnings("rawtypes")
     private ExcelWriteCellProcessor defaultProcessor;
 
@@ -46,25 +46,25 @@ public class ExcelWriteCellValueMapping extends HashMap<String, Object> {
 
     public void setDefaultValue(Object val) {
         this.defaultValue = val;
-        this.settedDefaultValue = true;
+        this.useDefaultValue = true;
     }
 
     public void setDefaultValueWithDefaultInput() {
         this.defaultValue = DEFAULT_INPUT;
-        this.settedDefaultValue = true;
+        this.useDefaultValue = true;
     }
 
     public void resetDefaultValue() {
         this.defaultValue = null;
-        this.settedDefaultValue = false;
+        this.useDefaultValue = false;
     }
 
-    public boolean isSettedDefaultValue() {
-        return settedDefaultValue;
+    public boolean isUseDefaultValue() {
+        return useDefaultValue;
     }
 
-    public boolean isSettedDefaultValueWithDefaultInput() {
-        return settedDefaultValue && (defaultValue == DEFAULT_INPUT);
+    public boolean isUseDefaultValueWithDefaultInput() {
+        return useDefaultValue && (defaultValue == DEFAULT_INPUT);
     }
 
     @SuppressWarnings("rawtypes")
@@ -72,8 +72,7 @@ public class ExcelWriteCellValueMapping extends HashMap<String, Object> {
         return defaultProcessor;
     }
 
-    public void setDefaultProcessor(@SuppressWarnings("rawtypes")
-    ExcelWriteCellProcessor defaultProcessor) {
+    public void setDefaultProcessor(@SuppressWarnings("rawtypes") ExcelWriteCellProcessor defaultProcessor) {
         this.defaultProcessor = defaultProcessor;
     }
 }
