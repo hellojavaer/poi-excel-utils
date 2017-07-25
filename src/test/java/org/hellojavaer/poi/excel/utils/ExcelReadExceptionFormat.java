@@ -4,7 +4,7 @@ import org.hellojavaer.poi.excel.utils.read.ExcelReadException;
 
 /**
  *
- * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming[邹凯明]</a>,created on 08/12/2016.
+ * @author <a href="mailto:hellojavaer@gmail.com">zoukaiming</a>,created on 08/12/2016.
  */
 public class ExcelReadExceptionFormat {
 
