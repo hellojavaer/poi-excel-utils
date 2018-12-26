@@ -5,6 +5,14 @@
 
 ExcelUtils
 
+### Reading example
+
+![image](https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/read-demo-1.png)
+
+### Writing example
+
+![image](https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/write-demo-2.png)
+
 ## Documentation
 
 - [Documentation Home](https://github.com/hellojavaer/poi-excel-utils/wiki)
