@@ -7,11 +7,11 @@ ExcelUtils
 
 ### Reading example
 
-![image](https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/read-demo-1.png)
+<image src="https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/read-demo-1.png" width="590" height="390" />
 
 ### Writing example
 
-![image](https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/write-demo-2.png)
+<image src="https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/write-demo-2.png" width="590" height="390" />
 
 ## Documentation
 
