@@ -13,11 +13,7 @@ ExcelUtils
 
 <image src="https://github.com/hellojavaer/poi-excel-utils/blob/master/src/test/resources/img/write-demo-2.png" width="590" height="390" />
 
-## Documentation
-
-- [Documentation Home](https://github.com/hellojavaer/poi-excel-utils/wiki)
-- [Frequently Asked Questions](https://github.com/hellojavaer/poi-excel-utils/wiki/faq)
-- [Get some examples](https://github.com/hellojavaer/poi-excel-utils/tree/master/src/test/java/org/hellojavaer/poi/excel/utils)
+## [Get some examples](https://github.com/hellojavaer/poi-excel-utils/tree/master/src/test/java/org/hellojavaer/poi/excel/utils)
 
 ## Download
 
